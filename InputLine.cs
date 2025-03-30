@@ -8,10 +8,10 @@ namespace KTL_Magnet2
 {
     public class InputLine
     {
-        public double B_Setpoint;
+        public double B_Setpoint {  get; set; }
         public double B_Readout;
-        public double V1;
-        public double V2;
+        public double V1 {  get; set; }
+        public double V2 { get; set; }
         public int Sign {
             get { return p_sign;  }
             set { SetSign(value); } 

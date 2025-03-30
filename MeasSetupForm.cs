@@ -136,6 +136,11 @@ namespace KTL_Magnet2
             checkBox_use_ct_readout.Checked = setup.UseReadoutCalibrationTables;
             checkBox_use_ct_setpoint.Checked = setup.UseSetpointCalibrationTables;
 
+            textBox_sp_plus_filename.Text = setup.SP_plus_filename;
+            textBox_sp_minus_filename.Text = setup.SP_minus_filename;
+            textBox_readout_filename.Text = setup.Readout_filename; 
+
+
             UpdateReadoutSourceList(setup);
 
             textBox_dbmax.Text = setup.MaxBStep.ToString();
@@ -144,6 +149,7 @@ namespace KTL_Magnet2
             textBox_bsrmax.Text = setup.MaxBSlewrate.ToString();
             textBox_v1srmax.Text = setup.MaxV1SlewRate.ToString();
             textBox_v2srmax.Text = setup.MaxV2SlewRate.ToString();
+            textBox_zeroDelay.Text =setup.ZeroCrossingDelay.ToString();
 
         }
 
@@ -196,16 +202,21 @@ namespace KTL_Magnet2
         {
             UpdateVisaMeasurments();
             UpdateReadoutSourceList(localExpSetup);
+            SetReadoutSource(localExpSetup,comboBox_readout.SelectedIndex);
+            if (localExpSetup.readoutSourceType == ReadoutSourceType.Visa) comboBox_readout.SelectedIndex = 0;
             if (localExpSetup.readoutSourceType == ReadoutSourceType.Visa)
             {
                 localExpSetup.readoutSourceId = -1;
             }
+            
         }
 
         private void ADChanged(object sender, EventArgs e)
         {
             UpdateADS();
             UpdateReadoutSourceList(localExpSetup);
+            SetReadoutSource(localExpSetup, comboBox_readout.SelectedIndex);
+            if (localExpSetup.readoutSourceType == ReadoutSourceType.AD) comboBox_readout.SelectedIndex = 0;
             if (localExpSetup.readoutSourceType == ReadoutSourceType.AD)
             {
                 localExpSetup.readoutSourceId = -1;
@@ -230,9 +241,27 @@ namespace KTL_Magnet2
                 localExpSetup.MaxBSlewrate = Double.Parse(textBox_bsrmax.Text);
                 localExpSetup.MaxV1SlewRate = Double.Parse(textBox_v1srmax.Text);
                 localExpSetup.MaxV2SlewRate = Double.Parse(textBox_v2srmax.Text);
-                
+                localExpSetup.ZeroCrossingDelay = Int32.Parse(textBox_zeroDelay.Text);
+
                 localExpSetup.UseReadoutCalibrationTables = checkBox_use_ct_readout.Checked;
+                if (localExpSetup.UseReadoutCalibrationTables)
+                {
+                    localExpSetup.Readout_filename = textBox_readout_filename.Text;
+                    if (localExpSetup.Readout_filename == "")
+                        throw new Exception("Не указано имя файла с калибровочной таблицей");
+                    if (comboBox_readout.SelectedIndex == -1)
+                        throw new Exception("Не указан источник данных для калибровки");
+
+                }
+
                 localExpSetup.UseSetpointCalibrationTables = checkBox_use_ct_setpoint.Checked;
+                if (localExpSetup.UseSetpointCalibrationTables)
+                {
+                    localExpSetup.SP_minus_filename = textBox_sp_minus_filename.Text;
+                    localExpSetup.SP_plus_filename = textBox_sp_plus_filename.Text;
+                    if (localExpSetup.SP_minus_filename == "" | localExpSetup.SP_plus_filename == "")
+                        throw new Exception("Не указано имя файла с калибровочной таблицей");
+                }
 
                 if (localExpSetup.UseReadoutCalibrationTables)
                 {
@@ -243,6 +272,10 @@ namespace KTL_Magnet2
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); } 
             return reading_ok;
+
+            
+
+
         }
 
 
@@ -341,6 +374,11 @@ namespace KTL_Magnet2
         }
 
         private void deviceBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MeasSetupForm_Load(object sender, EventArgs e)
         {
 
         }

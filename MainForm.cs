@@ -13,6 +13,7 @@ using System.Threading;
 using NationalInstruments.VisaNS;
 using System.IO;
 using System.Globalization;
+using System.Xml.Serialization;
 
 
 
@@ -62,16 +63,14 @@ namespace KTL_Magnet2
             
             if (measController.expSetup.UseSetpointCalibrationTables)
             {
-                DataGridViewColumn column = new DataGridViewColumn();
-                column.CellTemplate = new DataGridViewTextBoxCell();
+                DataGridViewColumn column = new DataGridViewTextBoxColumn();
                 column.DataPropertyName = "B_Setpoint";
                 column.Name = "B setpoint";
                 dataGridView1.Columns.Add(column);
             }
             else
             {
-                DataGridViewColumn column_v1 = new DataGridViewColumn(); 
-                column_v1.CellTemplate = new DataGridViewTextBoxCell();
+                DataGridViewColumn column_v1 = new DataGridViewTextBoxColumn();
                 column_v1.Name = "V1";
                 column_v1.DataPropertyName = "V1";
                 dataGridView1.Columns.Add(column_v1);
@@ -80,20 +79,23 @@ namespace KTL_Magnet2
                 column_v2.Name = "V2";
                 column_v2.DataPropertyName = "V2";
                 dataGridView1.Columns.Add(column_v2);
+                DataGridViewTextBoxColumn column_s = new DataGridViewTextBoxColumn();
+                column_s.Name = "Sign";
+                column_s.DataPropertyName = "Sign";
+                dataGridView1.Columns.Add(column_s);
+                 
             }
 
             for (int i = 0; i < measController.expSetup.ad_Measurments.Count; i++)
             {
-                DataGridViewColumn column = new DataGridViewColumn();
-                column.CellTemplate = new DataGridViewTextBoxCell();
+                DataGridViewColumn column = new DataGridViewTextBoxColumn();
                 column.Name = "AD_" + measController.expSetup.ad_Measurments[i].ch_num.ToString();
                 dataGridView1.Columns.Add(column);
             }
 
             for (int i = 0; i < measController.expSetup.visa_Measurments.Count; i++) 
             {
-                DataGridViewColumn column = new DataGridViewColumn();
-                column.CellTemplate = new DataGridViewTextBoxCell();
+                DataGridViewColumn column = new DataGridViewTextBoxColumn();
                 column.Name = "VISA_" + measController.expSetup.visa_Measurments[i].Type.ToString();
                 dataGridView1.Columns.Add(column);
             }
@@ -356,11 +358,30 @@ namespace KTL_Magnet2
         {
 
         }
+        
+        private void AddExps()
+        {
+            AddLineForm frm4 = new AddLineForm();
+            frm4.ShowDialog();
+            if (frm4.input_valid)
+            {
+                for (int i = 0; i < frm4.steps; i++)
+                {
+                    measController.AddExperiment(frm4.sign,
+                        frm4.v1_start + i * frm4.v1_step,
+                        frm4.v2_start + i * frm4.v2_step);
+                }
+            }
+        }
+        private void AddExpsCalibrationMode()
+        {
 
+        }
 
         private void добавитьСтрокиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            if (measController.expSetup.UseReadoutCalibrationTables) AddExpsCalibrationMode();
+            else AddExps();
         }
 
         private void настройкиПрограммыToolStripMenuItem_Click(object sender, EventArgs e)

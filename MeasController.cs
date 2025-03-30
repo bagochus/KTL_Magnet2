@@ -10,11 +10,14 @@ using NationalInstruments.VisaNS;
 using OpenLayers.Base;
 using System.Text.Json;
 using System.IO;
+using OpenTK.Graphics.ES20;
 
 
 namespace KTL_Magnet2
 {
     public delegate void LoadSetupDelegate(ExpSetup setup);
+    delegate string ErrLine(int x);
+    
     public class MeasController
     {
         public ExpSetup expSetup;
@@ -36,7 +39,61 @@ namespace KTL_Magnet2
 
         public void LoadSetup(ExpSetup setup)
         {
+
+            //todo - add cal.tables check and load
             this.expSetup = setup;
+        }
+
+        private void CheckExperimentalPlan()
+        {
+            String error_message = "Превышено начальное значение переменной ";
+
+            ErrLine errline = (int x) => { return ", строка " + x.ToString(); };
+
+            if (inputLines[0].V1 > expSetup.MaxV1Step) throw new Exception(error_message + "V1");
+            if (inputLines[0].V2 > expSetup.MaxV1Step) throw new Exception(error_message + "V2");
+            if (inputLines[0].B_Setpoint > expSetup.MaxV1Step) throw new Exception(error_message + "B_setpoint");
+
+            error_message = "Превышен шаг переменной ";
+            for (int i = 0; i < inputLines.Count - 1; i++)
+            {
+                if (Math.Abs(inputLines[i+1].V1 - inputLines[1].V1) > expSetup.MaxV1Step & (expSetup.MaxV1Step != double.NaN))
+                     throw new Exception(error_message + "V1" + errline(i));
+                if (Math.Abs(inputLines[i + 1].V2 - inputLines[1].V2) > expSetup.MaxV2Step)
+                    throw new Exception(error_message + "V2" + errline(i));
+                if (Math.Abs(inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint) > expSetup.MaxBStep)
+                    throw new Exception(error_message + "B_setpoint" + errline(i));
+            }
+            error_message = "Превышена шаг переменной ";
+            double steptime = StepDuration() / 1000;
+            for (int i = 0; i < inputLines.Count - 1; i++)
+            {
+                if ((inputLines[i + 1].V1 - inputLines[1].V1) > expSetup.MaxV1Step)
+                    throw new Exception(error_message + "V1" + errline(i));
+                if ((inputLines[i + 1].V2 - inputLines[1].V2) > expSetup.MaxV2Step)
+                    throw new Exception(error_message + "V2" + errline(i));
+                if ((inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint) > expSetup.MaxBStep)
+                    throw new Exception(error_message + "B_setpoint" + errline(i));
+            }
+
+
+
+
+        }
+
+        private int StepDuration()
+        {
+            int result = 0;
+
+            for (int i = 0; i < expSetup.ad_Measurments.Count; i++) 
+            {
+                result += expSetup.ad_Measurments[i].Delay;
+            }
+            for (int i = 0; i < expSetup.visa_Measurments.Count; i++)
+            {
+                result += expSetup.visa_Measurments[i].Delay;
+            }
+            return result;
         }
 
 
