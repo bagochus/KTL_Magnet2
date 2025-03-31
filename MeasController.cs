@@ -57,14 +57,14 @@ namespace KTL_Magnet2
             error_message = "Превышен шаг переменной ";
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
-                if (Math.Abs(inputLines[i+1].V1 - inputLines[1].V1) > expSetup.MaxV1Step & (expSetup.MaxV1Step != double.NaN))
+                if (Math.Abs(inputLines[i+1].V1 - inputLines[1].V1) > expSetup.MaxV1Step)
                      throw new Exception(error_message + "V1" + errline(i));
                 if (Math.Abs(inputLines[i + 1].V2 - inputLines[1].V2) > expSetup.MaxV2Step)
                     throw new Exception(error_message + "V2" + errline(i));
                 if (Math.Abs(inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint) > expSetup.MaxBStep)
                     throw new Exception(error_message + "B_setpoint" + errline(i));
             }
-            error_message = "Превышена шаг переменной ";
+            error_message = "Превышена скорость нарастания переменной ";
             double steptime = StepDuration() / 1000;
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
