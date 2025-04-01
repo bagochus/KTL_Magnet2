@@ -41,7 +41,12 @@ namespace KTL_Magnet2
             ScanDevices();
 
             try { measController.LoadSettings("last.json"); }
-            catch { MessageBox.Show("Не удалось загрузить предыдущие настройки"); }
+            catch {
+                measController = new MeasController();
+                
+                MessageBox.Show("Не удалось загрузить предыдущие настройки"); }
+            BuildTable();
+
         }
 
 
@@ -53,7 +58,21 @@ namespace KTL_Magnet2
 
         }
 
-
+        private void AddBindedFloatColumn(String name, string pr_name)
+        {
+            DataGridViewColumn column = new DataGridViewTextBoxColumn();
+            column.DataPropertyName = pr_name;
+            column.Name = name;
+            column.DefaultCellStyle.Format = "0.###";
+            dataGridView1.Columns.Add(column);
+        }
+        private void AddFloatColumn(String name)
+        {
+            DataGridViewColumn column = new DataGridViewTextBoxColumn();
+            column.Name = name;
+            column.DefaultCellStyle.Format = "0.###";
+            dataGridView1.Columns.Add(column);
+        }
 
         private void BuildTable()
         {
@@ -63,41 +82,23 @@ namespace KTL_Magnet2
             
             if (measController.expSetup.UseSetpointCalibrationTables)
             {
-                DataGridViewColumn column = new DataGridViewTextBoxColumn();
-                column.DataPropertyName = "B_Setpoint";
-                column.Name = "B setpoint";
-                dataGridView1.Columns.Add(column);
+                AddBindedFloatColumn("B_setpoint", "B_setpoint");
             }
-            else
+            if (!measController.expSetup.UseSetpointCalibrationTables | measController.expSetup.ShowConvertedV)
             {
-                DataGridViewColumn column_v1 = new DataGridViewTextBoxColumn();
-                column_v1.Name = "V1";
-                column_v1.DataPropertyName = "V1";
-                dataGridView1.Columns.Add(column_v1);
-                DataGridViewColumn column_v2 = new DataGridViewColumn();
-                column_v2.CellTemplate = new DataGridViewTextBoxCell();
-                column_v2.Name = "V2";
-                column_v2.DataPropertyName = "V2";
-                dataGridView1.Columns.Add(column_v2);
-                DataGridViewTextBoxColumn column_s = new DataGridViewTextBoxColumn();
-                column_s.Name = "Sign";
-                column_s.DataPropertyName = "Sign";
-                dataGridView1.Columns.Add(column_s);
-                 
+                AddBindedFloatColumn("V1", "V1");
+                AddBindedFloatColumn("V2", "V2");
+                AddBindedFloatColumn("Sign", "Sign");                 
             }
 
             for (int i = 0; i < measController.expSetup.ad_Measurments.Count; i++)
             {
-                DataGridViewColumn column = new DataGridViewTextBoxColumn();
-                column.Name = "AD_" + measController.expSetup.ad_Measurments[i].ch_num.ToString();
-                dataGridView1.Columns.Add(column);
+                AddFloatColumn("AD_" + measController.expSetup.ad_Measurments[i].ch_num.ToString());
             }
 
             for (int i = 0; i < measController.expSetup.visa_Measurments.Count; i++) 
             {
-                DataGridViewColumn column = new DataGridViewTextBoxColumn();
-                column.Name = "VISA_" + measController.expSetup.visa_Measurments[i].Type.ToString();
-                dataGridView1.Columns.Add(column);
+                AddFloatColumn("VISA_" + measController.expSetup.visa_Measurments[i].Type.ToString());
             }
             
 
@@ -318,9 +319,6 @@ namespace KTL_Magnet2
             }
             catch (Exception e ) { MessageBox.Show(e.Message); }
 
-
-
-
         }
 
         private void plotButton_Click(object sender, EventArgs e)
@@ -329,30 +327,6 @@ namespace KTL_Magnet2
             plotForm.Show();
         }
 
-        private void addButton_Click(object sender, EventArgs e)
-        {
-            AddLineForm frm4 = new AddLineForm();
-            frm4.ShowDialog();
-            if (frm4.input_valid)
-            {
-                int i_start = dataGridView1.Rows.Count - 1;
-                dataGridView1.Rows.Add(frm4.steps);
-
-                for (int i = 0; i < frm4.steps; i++)
-                {
-                    dataGridView1.Rows[i_start+i].Cells[0].Value = frm4.sign;
-                    dataGridView1.Rows[i_start + i].Cells[1].Value = frm4.v1_start + i * frm4.v1_step;
-                    dataGridView1.Rows[i_start + i].Cells[2].Value = frm4.v2_start + i * frm4.v2_step;
-                }
-
-
-
-
-            }
-
-
-
-        }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -375,12 +349,13 @@ namespace KTL_Magnet2
         }
         private void AddExpsCalibrationMode()
         {
-
+            AddLineBForm addLineBForm = new AddLineBForm(measController);
+            addLineBForm.ShowDialog();
         }
 
         private void добавитьСтрокиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (measController.expSetup.UseReadoutCalibrationTables) AddExpsCalibrationMode();
+            if (measController.expSetup.UseSetpointCalibrationTables) AddExpsCalibrationMode();
             else AddExps();
         }
 

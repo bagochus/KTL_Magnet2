@@ -38,7 +38,6 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.plotButton = new System.Windows.Forms.Button();
-            this.addButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.экспериментыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.добавитьСтрокиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -139,16 +138,6 @@
             this.plotButton.UseVisualStyleBackColor = true;
             this.plotButton.Click += new System.EventHandler(this.plotButton_Click);
             // 
-            // addButton
-            // 
-            this.addButton.Location = new System.Drawing.Point(255, 28);
-            this.addButton.Name = "addButton";
-            this.addButton.Size = new System.Drawing.Size(113, 23);
-            this.addButton.TabIndex = 7;
-            this.addButton.Text = "Добавить строки";
-            this.addButton.UseVisualStyleBackColor = true;
-            this.addButton.Click += new System.EventHandler(this.addButton_Click);
-            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -223,7 +212,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 383);
-            this.Controls.Add(this.addButton);
             this.Controls.Add(this.plotButton);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
@@ -258,7 +246,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.Button plotButton;
-        private System.Windows.Forms.Button addButton;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem экспериментыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem добавитьСтрокиToolStripMenuItem;

@@ -32,6 +32,8 @@ namespace KTL_Magnet2
         private String[] devlist;
         private LoadSetupDelegate loadSetupDelegate;
         private NotifyParentFormDelegate notifyParentForm;
+        private bool previous_usect_state;
+        private bool input_list_empty;
 
 
         private ExpSetup localExpSetup = new ExpSetup();
@@ -59,6 +61,8 @@ namespace KTL_Magnet2
             notifyParentForm = parent.SetupUpdated;
             InitialInterfaceSetup();
             ConstructFormFromSetup(mc.expSetup);
+            previous_usect_state = mc.expSetup.UseSetpointCalibrationTables;
+            input_list_empty = mc.inputLines.Count == 0;
         }
 
         private void InitialInterfaceSetup()
@@ -135,9 +139,10 @@ namespace KTL_Magnet2
 
             checkBox_use_ct_readout.Checked = setup.UseReadoutCalibrationTables;
             checkBox_use_ct_setpoint.Checked = setup.UseSetpointCalibrationTables;
+            checkBox_show_v.Checked = setup.ShowConvertedV;
 
-            textBox_sp_plus_filename.Text = setup.SP_plus_filename;
-            textBox_sp_minus_filename.Text = setup.SP_minus_filename;
+            textBox_v1_filename.Text = setup.v1_filename;
+            textBox_v2_filename.Text = setup.v2_filename;
             textBox_readout_filename.Text = setup.Readout_filename; 
 
 
@@ -203,9 +208,9 @@ namespace KTL_Magnet2
             UpdateVisaMeasurments();
             UpdateReadoutSourceList(localExpSetup);
             SetReadoutSource(localExpSetup,comboBox_readout.SelectedIndex);
-            if (localExpSetup.readoutSourceType == ReadoutSourceType.Visa) comboBox_readout.SelectedIndex = 0;
             if (localExpSetup.readoutSourceType == ReadoutSourceType.Visa)
             {
+                comboBox_readout.SelectedIndex = -1;
                 localExpSetup.readoutSourceId = -1;
             }
             
@@ -216,9 +221,9 @@ namespace KTL_Magnet2
             UpdateADS();
             UpdateReadoutSourceList(localExpSetup);
             SetReadoutSource(localExpSetup, comboBox_readout.SelectedIndex);
-            if (localExpSetup.readoutSourceType == ReadoutSourceType.AD) comboBox_readout.SelectedIndex = 0;
             if (localExpSetup.readoutSourceType == ReadoutSourceType.AD)
             {
+                comboBox_readout.SelectedIndex = -1;
                 localExpSetup.readoutSourceId = -1;
             }
         }
@@ -255,11 +260,12 @@ namespace KTL_Magnet2
                 }
 
                 localExpSetup.UseSetpointCalibrationTables = checkBox_use_ct_setpoint.Checked;
+                localExpSetup.ShowConvertedV = checkBox_show_v.Checked;
                 if (localExpSetup.UseSetpointCalibrationTables)
                 {
-                    localExpSetup.SP_minus_filename = textBox_sp_minus_filename.Text;
-                    localExpSetup.SP_plus_filename = textBox_sp_plus_filename.Text;
-                    if (localExpSetup.SP_minus_filename == "" | localExpSetup.SP_plus_filename == "")
+                    localExpSetup.v2_filename = textBox_v2_filename.Text;
+                    localExpSetup.v1_filename = textBox_v1_filename.Text;
+                    if (localExpSetup.v2_filename == "" | localExpSetup.v1_filename == "")
                         throw new Exception("Не указано имя файла с калибровочной таблицей");
                 }
 
@@ -269,12 +275,25 @@ namespace KTL_Magnet2
                 }
 
                 reading_ok = true;
+
+                if (!previous_usect_state &&
+                    localExpSetup.UseSetpointCalibrationTables &&
+                    !input_list_empty)
+                {
+                    DialogResult result = MessageBox.Show(
+                            "Включение режима калибровки очистит список экспериментов. \nПродолжить?",
+                            "Сообщение",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information,
+                            MessageBoxDefaultButton.Button1,
+                            MessageBoxOptions.DefaultDesktopOnly);
+
+                    reading_ok = (result == DialogResult.Yes);
+                }
+                
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); } 
             return reading_ok;
-
-            
-
 
         }
 

@@ -98,6 +98,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddLineBForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddLineBForm.Designer.cs">
+      <DependentUpon>AddLineBForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InterpolationTable.cs" />
     <Compile Include="Measurment\AD_Measurment.cs" />
     <Compile Include="Measurment\ExpSetup.cs" />
     <Compile Include="MainForm.cs">
@@ -130,6 +137,9 @@
     <Compile Include="Measurment.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AddLineBForm.resx">
+      <DependentUpon>AddLineBForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

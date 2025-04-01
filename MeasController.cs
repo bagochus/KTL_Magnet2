@@ -20,14 +20,15 @@ namespace KTL_Magnet2
     
     public class MeasController
     {
-        public ExpSetup expSetup;
+        public ExpSetup expSetup = new ExpSetup();
         private Measurer msr;
         private Thread m_thread;
         private bool running = false;
         private bool dt_ready = false;
-        
-
-
+        private bool tables_ready = false;
+        private InterpolationTable table_setpoint_v1 = new InterpolationTable();
+        private InterpolationTable table_setpoint_v2 = new InterpolationTable();
+        private InterpolationTable table_readout = new InterpolationTable();
 
 
         public AD_settings ad_Settings;
@@ -40,11 +41,51 @@ namespace KTL_Magnet2
         public void LoadSetup(ExpSetup setup)
         {
 
-            //todo - add cal.tables check and load
-            this.expSetup = setup;
+            try
+            {
+                bool from_state = this.expSetup.UseSetpointCalibrationTables;
+                bool to_state = setup.UseSetpointCalibrationTables;
+                if (!from_state && to_state)  inputLines.Clear(); 
+                this.expSetup = setup;
+                if (expSetup.UseSetpointCalibrationTables) LoadTables();
+
+            }
+            catch (Exception ex){ MessageBox.Show(ex.Message); }
+            
         }
 
-        private void CheckExperimentalPlan()
+        private void LoadTables()
+        {
+            tables_ready = false;
+            if (expSetup.UseReadoutCalibrationTables) 
+            {
+                if(! table_readout.ParseFile("tables/" + expSetup.Readout_filename))
+                 throw new Exception("Не удалось прочитать калибровочную таблицу для измерения B"); 
+            }
+            if (expSetup.UseSetpointCalibrationTables)
+            {
+                bool load_succesful = true;
+                load_succesful &= table_setpoint_v1.ParseFile("tables/" + expSetup.v1_filename);
+                load_succesful &= table_setpoint_v2.ParseFile("tables/" + expSetup.v2_filename);
+                if (!load_succesful) throw new Exception("Не удалось прочитать калибровочную таблицу для установки B");
+            }
+            tables_ready = true;
+        }
+
+        private bool ApplySetpointTables(InputLine line)
+        {
+            if (!expSetup.UseSetpointCalibrationTables) throw new Exception("Ошибка режима калибровки");
+            if (!tables_ready) throw new Exception("Ошибка режима калибровки");
+            bool result = true;
+            line.V1 = table_setpoint_v1.GetY(line.B_Setpoint);
+            line.V2 = table_setpoint_v2.GetY(line.B_Setpoint);
+
+
+
+            return result;
+        }
+
+        private void CheckLimits()
         {
             String error_message = "Превышено начальное значение переменной ";
 
@@ -68,17 +109,13 @@ namespace KTL_Magnet2
             double steptime = StepDuration() / 1000;
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
-                if ((inputLines[i + 1].V1 - inputLines[1].V1) > expSetup.MaxV1Step)
+                if (((inputLines[i + 1].V1 - inputLines[1].V1))/steptime > expSetup.MaxV1SlewRate)
                     throw new Exception(error_message + "V1" + errline(i));
-                if ((inputLines[i + 1].V2 - inputLines[1].V2) > expSetup.MaxV2Step)
+                if (((inputLines[i + 1].V2 - inputLines[1].V2)) / steptime  > expSetup.MaxV2SlewRate)
                     throw new Exception(error_message + "V2" + errline(i));
-                if ((inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint) > expSetup.MaxBStep)
+                if (((inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint)) / steptime  > expSetup.MaxBSlewrate)
                     throw new Exception(error_message + "B_setpoint" + errline(i));
             }
-
-
-
-
         }
 
         private int StepDuration()
@@ -129,15 +166,16 @@ namespace KTL_Magnet2
 
         public void SaveSettings (string filename)
         {
-            using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate))
+            using (FileStream fs = new FileStream("settings/"+filename, FileMode.OpenOrCreate))
             {
+                File.Delete("settings/" + filename);
                 JsonSerializer.Serialize(fs,expSetup);
             }
         }
 
         public void LoadSettings(string filename)
         {
-            using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate))
+            using (FileStream fs = new FileStream("settings/" + filename, FileMode.OpenOrCreate))
             { 
                 expSetup = JsonSerializer.Deserialize<ExpSetup>(fs);
             }

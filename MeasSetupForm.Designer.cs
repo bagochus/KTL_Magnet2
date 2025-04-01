@@ -117,13 +117,14 @@
             this.label26 = new System.Windows.Forms.Label();
             this.label27 = new System.Windows.Forms.Label();
             this.textBox_zeroDelay = new System.Windows.Forms.TextBox();
-            this.textBox_sp_plus_filename = new System.Windows.Forms.TextBox();
-            this.textBox_sp_minus_filename = new System.Windows.Forms.TextBox();
+            this.textBox_v1_filename = new System.Windows.Forms.TextBox();
+            this.textBox_v2_filename = new System.Windows.Forms.TextBox();
             this.label28 = new System.Windows.Forms.Label();
             this.label29 = new System.Windows.Forms.Label();
             this.label30 = new System.Windows.Forms.Label();
             this.label31 = new System.Windows.Forms.Label();
             this.textBox_readout_filename = new System.Windows.Forms.TextBox();
+            this.checkBox_show_v = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // onBox0
@@ -928,37 +929,37 @@
             this.textBox_zeroDelay.Size = new System.Drawing.Size(100, 20);
             this.textBox_zeroDelay.TabIndex = 97;
             // 
-            // textBox_sp_plus_filename
+            // textBox_v1_filename
             // 
-            this.textBox_sp_plus_filename.Location = new System.Drawing.Point(166, 462);
-            this.textBox_sp_plus_filename.Name = "textBox_sp_plus_filename";
-            this.textBox_sp_plus_filename.Size = new System.Drawing.Size(184, 20);
-            this.textBox_sp_plus_filename.TabIndex = 98;
+            this.textBox_v1_filename.Location = new System.Drawing.Point(208, 462);
+            this.textBox_v1_filename.Name = "textBox_v1_filename";
+            this.textBox_v1_filename.Size = new System.Drawing.Size(142, 20);
+            this.textBox_v1_filename.TabIndex = 98;
             // 
-            // textBox_sp_minus_filename
+            // textBox_v2_filename
             // 
-            this.textBox_sp_minus_filename.Location = new System.Drawing.Point(166, 488);
-            this.textBox_sp_minus_filename.Name = "textBox_sp_minus_filename";
-            this.textBox_sp_minus_filename.Size = new System.Drawing.Size(184, 20);
-            this.textBox_sp_minus_filename.TabIndex = 99;
+            this.textBox_v2_filename.Location = new System.Drawing.Point(208, 488);
+            this.textBox_v2_filename.Name = "textBox_v2_filename";
+            this.textBox_v2_filename.Size = new System.Drawing.Size(142, 20);
+            this.textBox_v2_filename.TabIndex = 99;
             // 
             // label28
             // 
             this.label28.AutoSize = true;
             this.label28.Location = new System.Drawing.Point(51, 465);
             this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(109, 13);
+            this.label28.Size = new System.Drawing.Size(154, 13);
             this.label28.TabIndex = 100;
-            this.label28.Text = "Для \"+\" полярности";
+            this.label28.Text = "Для канала V1 (напряжение)";
             // 
             // label29
             // 
             this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(51, 489);
+            this.label29.Location = new System.Drawing.Point(93, 488);
             this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(106, 13);
+            this.label29.Size = new System.Drawing.Size(109, 13);
             this.label29.TabIndex = 101;
-            this.label29.Text = "Для \"-\" полярности";
+            this.label29.Text = "Для канала V2 (ток)";
             // 
             // label30
             // 
@@ -985,18 +986,29 @@
             this.textBox_readout_filename.Size = new System.Drawing.Size(187, 20);
             this.textBox_readout_filename.TabIndex = 104;
             // 
+            // checkBox_show_v
+            // 
+            this.checkBox_show_v.AutoSize = true;
+            this.checkBox_show_v.Location = new System.Drawing.Point(46, 527);
+            this.checkBox_show_v.Name = "checkBox_show_v";
+            this.checkBox_show_v.Size = new System.Drawing.Size(234, 17);
+            this.checkBox_show_v.TabIndex = 105;
+            this.checkBox_show_v.Text = "Показывать преобразованные значения";
+            this.checkBox_show_v.UseVisualStyleBackColor = true;
+            // 
             // MeasSetupForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(767, 570);
+            this.Controls.Add(this.checkBox_show_v);
             this.Controls.Add(this.textBox_readout_filename);
             this.Controls.Add(this.label31);
             this.Controls.Add(this.label30);
             this.Controls.Add(this.label29);
             this.Controls.Add(this.label28);
-            this.Controls.Add(this.textBox_sp_minus_filename);
-            this.Controls.Add(this.textBox_sp_plus_filename);
+            this.Controls.Add(this.textBox_v2_filename);
+            this.Controls.Add(this.textBox_v1_filename);
             this.Controls.Add(this.textBox_zeroDelay);
             this.Controls.Add(this.label27);
             this.Controls.Add(this.label26);
@@ -1185,12 +1197,13 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.TextBox textBox_zeroDelay;
-        private System.Windows.Forms.TextBox textBox_sp_plus_filename;
-        private System.Windows.Forms.TextBox textBox_sp_minus_filename;
+        private System.Windows.Forms.TextBox textBox_v1_filename;
+        private System.Windows.Forms.TextBox textBox_v2_filename;
         private System.Windows.Forms.Label label28;
         private System.Windows.Forms.Label label29;
         private System.Windows.Forms.Label label30;
         private System.Windows.Forms.Label label31;
         private System.Windows.Forms.TextBox textBox_readout_filename;
+        private System.Windows.Forms.CheckBox checkBox_show_v;
     }
 }
