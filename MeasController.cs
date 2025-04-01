@@ -54,6 +54,69 @@ namespace KTL_Magnet2
             
         }
 
+
+        public bool CheckAvaibleVisaDevices()
+
+        { 
+            bool result = true;
+
+            for (int i = 0; i < vm.Count(); i++) 
+            {
+                result &= VisaRes.Contains(vm[i].DeviceName);
+            }
+            return result;
+        }
+
+
+        public void Start()
+        {
+            ScanDevices();
+
+            if (!dt_ready)
+            {
+                MessageBox.Show("Ошибка свзяи с блоком ЦПА/АЦП");
+                return ;
+            }
+            if (!CheckAvaibleVisaDevices())
+            {
+                MessageBox.Show("Одно из устройств недоступно");
+                return;
+            }
+
+            CheckLimits();
+
+
+
+            if (ads3 == null) ads3 = new AD_settings(0);
+            msr.ads = ads3;
+            msr.Initialize();
+            if (!msr.Initialized) { return 2; }
+            msr.visaMeasurments = vm;
+
+            if (msr != null && msr.Initialized && msr.Terminated && dt_ready)
+            {
+
+                int line = 0;
+
+                if (CheckTable(out line))
+                {
+                    LoadTable();
+                    m_thread = new Thread(msr.Work);
+                    m_thread.Start();
+                    running = true;
+                    Thread t_thread = new Thread(this.Update_Interface);
+                    t_thread.Start();
+                }
+                else MessageBox.Show("Error at line " + (line + 1).ToString());
+            }
+
+            return 0;
+
+
+        }
+
+
+
         private void LoadTables()
         {
             tables_ready = false;
