@@ -11,6 +11,7 @@ using OpenLayers.Base;
 using System.Text.Json;
 using System.IO;
 using OpenTK.Graphics.ES20;
+using System.Linq.Expressions;
 
 
 namespace KTL_Magnet2
@@ -26,6 +27,7 @@ namespace KTL_Magnet2
         private bool running = false;
         private bool dt_ready = false;
         private bool tables_ready = false;
+        private bool calibration_ok = false;
         private InterpolationTable table_setpoint_v1 = new InterpolationTable();
         private InterpolationTable table_setpoint_v2 = new InterpolationTable();
         private InterpolationTable table_readout = new InterpolationTable();
@@ -36,6 +38,7 @@ namespace KTL_Magnet2
         public VisaMeasurment[] vm;
 
         public BindingList<InputLine> inputLines = new BindingList<InputLine>();
+        private double[,] OutputValues;
 
 
         public void LoadSetup(ExpSetup setup)
@@ -70,6 +73,7 @@ namespace KTL_Magnet2
 
         public void Start()
         {
+
             ScanDevices();
 
             if (!dt_ready)
@@ -83,15 +87,49 @@ namespace KTL_Magnet2
                 return;
             }
 
-            CheckLimits();
+            try 
+            {
+                CheckLimits();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+            
+            if (expSetup.UseSetpointCalibrationTables)
+            {
+                if (!tables_ready)
+                {
+                    try { LoadTables(); }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        return;
+                    }
+                }
+                ApplyAllLines();
+            }
 
 
 
-            if (ads3 == null) ads3 = new AD_settings(0);
-            msr.ads = ads3;
-            msr.Initialize();
-            if (!msr.Initialized) { return 2; }
-            msr.visaMeasurments = vm;
+            try
+            {
+                msr.Initialize();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+            int columns = expSetup.ad_Measurments.Count + expSetup.visa_Measurments.Count;
+            int rows = inputLines.Count;
+            OutputValues = new double[rows,columns];
+
+
+
+
 
             if (msr != null && msr.Initialized && msr.Terminated && dt_ready)
             {
@@ -101,7 +139,7 @@ namespace KTL_Magnet2
                 if (CheckTable(out line))
                 {
                     LoadTable();
-                    m_thread = new Thread(msr.Work);
+                   // m_thread = new Thread(msr.Work);
                     m_thread.Start();
                     running = true;
                     Thread t_thread = new Thread(this.Update_Interface);
@@ -115,6 +153,26 @@ namespace KTL_Magnet2
 
         }
 
+        private void Work()
+        {
+            for (int i = 0; i < inputLines.Count; i++) 
+            {
+                int first_visa_column = expSetup.ad_Measurments.Count;
+                for (int j = 0;j<expSetup.ad_Measurments.Count;j++)
+                {
+                    
+                    OutputValues[i, j] = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
+                }
+                  
+                for (int j = 0; j < expSetup.visa_Measurments.Count; j++)
+                {
+                    OutputValues[i, j + first_visa_column] = msr.PerformVisaMeasurment(expSetup.visa_Measurments[j]);
+                }
+
+            }
+
+
+        }
 
 
         private void LoadTables()
@@ -135,18 +193,32 @@ namespace KTL_Magnet2
             tables_ready = true;
         }
 
-        private bool ApplySetpointTables(InputLine line)
+        private void ApplySetpointTables(InputLine line)
         {
             if (!expSetup.UseSetpointCalibrationTables) throw new Exception("Ошибка режима калибровки");
             if (!tables_ready) throw new Exception("Ошибка режима калибровки");
-            bool result = true;
-            line.V1 = table_setpoint_v1.GetY(line.B_Setpoint);
-            line.V2 = table_setpoint_v2.GetY(line.B_Setpoint);
-
-
-
-            return result;
+            double temp_V1 = table_setpoint_v1.GetY(line.B_Setpoint);
+            double temp_V2 = table_setpoint_v2.GetY(line.B_Setpoint);
+            if (Math.Sign(temp_V1) == Math.Sign(temp_V2))
+            {
+                line.V1 = temp_V1;
+                line.V2 = temp_V2;
+                line.Sign = Math.Sign(temp_V1);
+            }
+            else throw new Exception("В результате преобразования получились управляющие напряжения разных знаков");
         }
+
+        private void  ApplyAllLines()
+        {
+            calibration_ok = false;
+            try 
+            {
+                for (int i = 0; i < inputLines.Count; i++) ApplySetpointTables(inputLines[i]);
+                calibration_ok = true;
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
 
         private void CheckLimits()
         {
@@ -216,6 +288,7 @@ namespace KTL_Magnet2
             InputLine il = new InputLine();
             il.B_Setpoint = B;
             inputLines.Add(il);
+
         }
 
         public void AddExperiment (int sign, double V1, double V2)

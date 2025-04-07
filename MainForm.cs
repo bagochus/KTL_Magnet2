@@ -226,7 +226,7 @@ namespace KTL_Magnet2
                 if (CheckTable(out line))
                 {
                     LoadTable();
-                    m_thread = new Thread(msr.Work);
+                //    m_thread = new Thread(msr.Work);
                     m_thread.Start();
                     running = true;
                     Thread t_thread = new Thread(this.Update_Interface);

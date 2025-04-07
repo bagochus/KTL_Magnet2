@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
+using KTL_Magnet2.Measurment;
+using ScottPlot;
 
 namespace KTL_Magnet2
 {
@@ -110,19 +112,17 @@ namespace KTL_Magnet2
 
                 ainp_ss = dev1.AnalogInputSubsystem(0);
                 ainp_ss.DataFlow = DataFlow.SingleValue;
-
-
                 ainp_ss.Config();
 
                 // test
-                for (int i = 0; i < ads.count; i++)
+               /* for (int i = 0; i < ads.count; i++)
                 {
                     ainp_ss.ChannelList.Add(i);
                     ainp_ss.ChannelList[i].Gain = ads.Gain[i];
 
                 }
                 ainp_ss.Config();
-
+               */
 
 
                 //test
@@ -181,6 +181,71 @@ namespace KTL_Magnet2
 
             Dispose_handlers();
             Terminated = true;
+        }
+
+
+        public void SetOutputVolatages(double V1, double V2, int Sign)
+        {
+            if (Sign == -1) dotp_ss.SetSingleValue(0x3);
+            if (Sign == 1) dotp_ss.SetSingleValue(0x1);
+
+            aotp_ss.SetSingleValueAsVolts(0, V1);
+            aotp_ss.SetSingleValueAsVolts(1, V2);
+
+        }
+
+        public double PerformADMeasurment(AD_Measurment ad)
+        {
+            double result = 0;
+            ainp_ss.Config();
+            Thread.Sleep(ad.Delay);
+            double tempsum = 0;
+            for (int k = 0; k < ad.Avg; k++)
+            {
+                tempsum += ainp_ss.GetSingleValueAsVolts(ad.ch_num, 1);
+            }
+            result = tempsum / ad.Avg;
+            return result;
+        }
+
+        public double PerformVisaMeasurment(VISA_Measurment vm)
+        {
+            if (vm.DeviceName == "") return double.NaN;
+            UsbSession uss = new UsbSession(vm.DeviceName);
+            if (vm.Channel > 0)
+            {
+                uss.Write("ROUT:CLOS " + vm.Channel.ToString());
+            }
+            if (vm.Limit > 0)
+            {
+                uss.Write("SENS:" + MeasID(vm.Type) + ":RANG " + visaMeasurments[i].Limit);
+            }
+            if (vm.PLC_time > 0)
+            {
+                uss.Write("SENS:" + MeasID(vm.Type) + ":NPLC " + visaMeasurments[i].PLC_time);
+            }
+            if (vm.Delay > 0)
+            {
+                Thread.Sleep(vm.Delay);
+            }
+            uss.Write("MEAS:" + MeasID(vm.Type) + "?");
+
+            double result = double.NaN;
+            Double.TryParse(uss.ReadString(), NumberStyles.Any, frmt, out result);
+            
+
+            if (visaMeasurments[0].Channel > 0)
+            {
+                uss.Write("ROUT:OPEN");
+            }
+
+            return result;
+        }
+
+        public void FinalActions()
+        {
+            aotp_ss.SetSingleValueAsVolts(0, 0);
+            aotp_ss.SetSingleValueAsVolts(0, 0);
         }
 
         private int MeasureVisa(ref double[,] results, int line)
