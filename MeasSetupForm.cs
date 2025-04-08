@@ -135,7 +135,7 @@ namespace KTL_Magnet2
                 }
                 if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
             }
-            if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
+            //if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
 
             checkBox_use_ct_readout.Checked = setup.UseReadoutCalibrationTables;
             checkBox_use_ct_setpoint.Checked = setup.UseSetpointCalibrationTables;
@@ -154,7 +154,7 @@ namespace KTL_Magnet2
             textBox_bsrmax.Text = setup.MaxBSlewrate.ToString();
             textBox_v1srmax.Text = setup.MaxV1SlewRate.ToString();
             textBox_v2srmax.Text = setup.MaxV2SlewRate.ToString();
-            textBox_zeroDelay.Text =setup.ZeroCrossingDelay.ToString();
+            textBox_zeroDelay.Text = setup.ZeroCrossingDelay.ToString();
 
         }
 

@@ -18,6 +18,7 @@ namespace KTL_Magnet2
 {
     public delegate void LoadSetupDelegate(ExpSetup setup);
     delegate string ErrLine(int x);
+    public enum PlotDataType {In, Out_AD, Out_Visa, Readout};
     
     public class MeasController
     {
@@ -44,6 +45,62 @@ namespace KTL_Magnet2
         public BindingList<InputLine> inputLines = new BindingList<InputLine>();
         private double[,] OutputValues;
         private List<double> ReadoutValues = new List<double>();
+
+
+        private List<String> PlotNames = new List<String>();
+        private List<PlotDataType> PlotTypes = new List<PlotDataType>();
+        private List<int> PlotIndices = new List<int>();
+
+        
+
+
+        private void BuildValueNamesList()
+        {
+            PlotNames.Clear();
+            PlotTypes.Clear();
+            PlotIndices.Clear();
+
+            List<String> names = new List<String>();
+            if (expSetup.UseSetpointCalibrationTables)
+            {
+                PlotNames.Add("B_setpoint");
+                PlotTypes.Add(PlotDataType.In);
+                PlotIndices.Add(0);
+
+            }
+            if (expSetup.UseReadoutCalibrationTables)
+            {
+                PlotNames.Add("B_readout");
+                PlotTypes.Add(PlotDataType.Readout);
+                PlotIndices.Add(0);
+            }
+
+            PlotNames.Add("V1");
+            PlotTypes.Add(PlotDataType.In);
+            PlotIndices.Add(1);
+            PlotNames.Add("V2");
+            PlotTypes.Add(PlotDataType.In);
+            PlotIndices.Add(2);
+            PlotNames.Add("Sign");
+            PlotTypes.Add(PlotDataType.In);
+            PlotIndices.Add(3);
+
+            for (int i = 0; i < expSetup.ad_Measurments.Count; i++)
+            {
+                PlotNames.Add("AD_"+expSetup.ad_Measurments[i].ch_num.ToString());
+                PlotTypes.Add(PlotDataType.Out_AD);
+                PlotIndices.Add(i);
+            }
+            for (int i = 0; i<expSetup.visa_Measurments.Count; i++)
+            {
+                PlotNames.Add ("VISA_" + expSetup.visa_Measurments[i].Type.ToString() + "_" + i.ToString());
+                PlotTypes.Add(PlotDataType.Out_Visa);
+                PlotIndices.Add(i);
+            }
+        }
+
+        public List<string> GetValueNames()
+        { return PlotNames; }   
 
 
         public void LoadSetup(ExpSetup setup)
@@ -146,6 +203,9 @@ namespace KTL_Magnet2
             for (int i = 0; i < inputLines.Count; i++) 
             {
                 int first_visa_column = expSetup.ad_Measurments.Count;
+
+                if ((i!=0) & (inputLines[i].Sign != inputLines[i-1].Sign)) Thread.Sleep(expSetup.ZeroCrossingDelay);
+                msr.SetOutputVolatages(inputLines[i].V1, inputLines[i].V2, inputLines[i].Sign);
                 for (int j = 0;j<expSetup.ad_Measurments.Count;j++)
                 {
                     double measured_value = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
@@ -334,7 +394,8 @@ namespace KTL_Magnet2
         {
             using (FileStream fs = new FileStream("settings/"+filename, FileMode.OpenOrCreate))
             {
-                //File.Delete("settings/" + filename);
+                try { File.Delete("settings/" + filename); }
+                catch { }
                 JsonSerializer.Serialize(fs,expSetup);
             }
         }

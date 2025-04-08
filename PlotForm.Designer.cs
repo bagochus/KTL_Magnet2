@@ -73,7 +73,7 @@
             // formsPlot1
             // 
             this.formsPlot1.DisplayScale = 0F;
-            this.formsPlot1.Location = new System.Drawing.Point(15, 73);
+            this.formsPlot1.Location = new System.Drawing.Point(15, 100);
             this.formsPlot1.Name = "formsPlot1";
             this.formsPlot1.Size = new System.Drawing.Size(730, 377);
             this.formsPlot1.TabIndex = 4;

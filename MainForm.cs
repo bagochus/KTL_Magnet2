@@ -361,7 +361,7 @@ namespace KTL_Magnet2
 
         private void plotButton_Click(object sender, EventArgs e)
         {
-            PlotForm plotForm = new PlotForm();
+            PlotForm plotForm = new PlotForm(measController);
             plotForm.Show();
         }
 

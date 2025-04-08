@@ -15,10 +15,12 @@ namespace KTL_Magnet2
     public partial class PlotForm : Form
     {
         //readonly FormsPlot FormsPlot1 = new FormsPlot() { Dock = DockStyle.Fill };
-        
+
+        private List<String> ValueNames;
 
 
-        public PlotForm()
+
+        public PlotForm(MeasController measController)
         {
             InitializeComponent();
             
