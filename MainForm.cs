@@ -19,6 +19,9 @@ using System.Xml.Serialization;
 
 namespace KTL_Magnet2
 {
+    public delegate void WriteOutpuValueDelegate(int row,int column,double value);
+    public delegate void WriteReadoutValueDelegate(int row, double value);
+
     public partial class MainForm : Form
     {   
         MeasController measController = new MeasController();
@@ -30,15 +33,18 @@ namespace KTL_Magnet2
         String[] VisaRes;
         VisaMeasurment[] vm;
 
+        private int InputColumns; 
 
 
         public MainForm()
         {
             InitializeComponent();
-            msr = new Measurer();
+            //msr = new Measurer();
             //msr.Initialize();
             running = false;
             ScanDevices();
+            measController.writeOutput = WriteNewOutputValue;
+            measController.writeReadout = WriteBReadoutValue;
 
             try { measController.LoadSettings("last.json"); }
             catch {
@@ -46,6 +52,8 @@ namespace KTL_Magnet2
                 
                 MessageBox.Show("Не удалось загрузить предыдущие настройки"); }
             BuildTable();
+
+
 
         }
 
@@ -79,16 +87,24 @@ namespace KTL_Magnet2
             dataGridView1.Columns.Clear();
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.DataSource = measController.inputLines;
+            InputColumns = 0;
             
             if (measController.expSetup.UseSetpointCalibrationTables)
             {
                 AddBindedFloatColumn("B_setpoint", "B_setpoint");
+                InputColumns++;
             }
             if (!measController.expSetup.UseSetpointCalibrationTables | measController.expSetup.ShowConvertedV)
             {
                 AddBindedFloatColumn("V1", "V1");
                 AddBindedFloatColumn("V2", "V2");
-                AddBindedFloatColumn("Sign", "Sign");                 
+                AddBindedFloatColumn("Sign", "Sign");     
+                InputColumns += 3;
+            }
+            if (measController.expSetup.UseReadoutCalibrationTables)
+            {
+                AddFloatColumn("B_readout");
+                InputColumns++;
             }
 
             for (int i = 0; i < measController.expSetup.ad_Measurments.Count; i++)
@@ -238,6 +254,28 @@ namespace KTL_Magnet2
             return 0;
         }  
 
+        public void WriteNewOutputValue(int row,int column,double value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new WriteOutpuValueDelegate(WriteNewOutputValue), new object[] { row, column, value });
+                return;
+            }
+            dataGridView1.Rows[row].Cells[column+InputColumns].Value = value;
+
+        }
+
+        public void WriteBReadoutValue(int row, double value)
+        {
+
+            if (InvokeRequired)
+            {
+                this.Invoke(new WriteReadoutValueDelegate(WriteBReadoutValue), new object[] { row, value });
+                return;
+            }
+            dataGridView1.Rows[row].Cells[InputColumns-1].Value = value;
+
+        }
 
         public void UpdateTable()
         {

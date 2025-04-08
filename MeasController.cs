@@ -32,6 +32,10 @@ namespace KTL_Magnet2
         private InterpolationTable table_setpoint_v2 = new InterpolationTable();
         private InterpolationTable table_readout = new InterpolationTable();
 
+        public WriteReadoutValueDelegate writeReadout;
+        public WriteOutpuValueDelegate writeOutput;
+
+
 
         public AD_settings ad_Settings;
         public String[] VisaRes = new String[0];
@@ -39,6 +43,7 @@ namespace KTL_Magnet2
 
         public BindingList<InputLine> inputLines = new BindingList<InputLine>();
         private double[,] OutputValues;
+        private List<double> ReadoutValues = new List<double>();
 
 
         public void LoadSetup(ExpSetup setup)
@@ -112,7 +117,6 @@ namespace KTL_Magnet2
             }
 
 
-
             try
             {
                 msr.Initialize();
@@ -126,30 +130,14 @@ namespace KTL_Magnet2
             int columns = expSetup.ad_Measurments.Count + expSetup.visa_Measurments.Count;
             int rows = inputLines.Count;
             OutputValues = new double[rows,columns];
+            ReadoutValues.Clear();
 
-
-
-
-
-            if (msr != null && msr.Initialized && msr.Terminated && dt_ready)
+            if (msr.Initialized)
             {
-
-                int line = 0;
-
-                if (CheckTable(out line))
-                {
-                    LoadTable();
-                   // m_thread = new Thread(msr.Work);
-                    m_thread.Start();
-                    running = true;
-                    Thread t_thread = new Thread(this.Update_Interface);
-                    t_thread.Start();
-                }
-                else MessageBox.Show("Error at line " + (line + 1).ToString());
+                m_thread = new Thread(this.Work);
+                m_thread.Start();
+                running = true;
             }
-
-            return 0;
-
 
         }
 
@@ -160,19 +148,61 @@ namespace KTL_Magnet2
                 int first_visa_column = expSetup.ad_Measurments.Count;
                 for (int j = 0;j<expSetup.ad_Measurments.Count;j++)
                 {
-                    
-                    OutputValues[i, j] = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
+                    double measured_value = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
+                    OutputValues[i, j] = measured_value;
+                    writeOutput(i, j, measured_value);
                 }
                   
                 for (int j = 0; j < expSetup.visa_Measurments.Count; j++)
                 {
-                    OutputValues[i, j + first_visa_column] = msr.PerformVisaMeasurment(expSetup.visa_Measurments[j]);
+                    double measured_value = msr.PerformVisaMeasurment(expSetup.visa_Measurments[j]);
+                    OutputValues[i, j + first_visa_column] = measured_value;
+                    writeOutput(i, j + first_visa_column, measured_value);
+                }
+                if (expSetup.UseReadoutCalibrationTables)
+                {
+                    double b_readout = CalculateReadoutValue(i);
+                    writeReadout(i,b_readout);
+                    ReadoutValues.Add(b_readout);   
                 }
 
             }
 
 
         }
+
+        private double CalculateReadoutValue(int row)
+        {
+            double result = double.NaN;
+            if (!expSetup.UseReadoutCalibrationTables) return result;
+            double input_value = double.NaN;
+            if (expSetup.readoutSourceType == ReadoutSourceType.AD)
+            {
+                int ad_index=-1;
+                for (int i = 0; i < expSetup.ad_Measurments.Count; i++)
+                {
+                    if (expSetup.ad_Measurments[i].ch_num == expSetup.readoutSourceId)
+                    {
+                        ad_index = i;
+                        break;
+                    }
+                }
+                if (ad_index == -1) return result;
+                input_value = OutputValues[row, ad_index];
+            }
+            if (expSetup.readoutSourceType == ReadoutSourceType.Visa)
+            {
+                int first_visa_column = expSetup.ad_Measurments.Count;
+                input_value = OutputValues[row, expSetup.readoutSourceId + first_visa_column];
+            }
+            if (input_value != double.NaN)
+            {
+                result = table_readout.GetY(input_value);
+            }
+            return result;
+        }
+        
+
 
 
         private void LoadTables()
@@ -304,7 +334,7 @@ namespace KTL_Magnet2
         {
             using (FileStream fs = new FileStream("settings/"+filename, FileMode.OpenOrCreate))
             {
-                File.Delete("settings/" + filename);
+                //File.Delete("settings/" + filename);
                 JsonSerializer.Serialize(fs,expSetup);
             }
         }

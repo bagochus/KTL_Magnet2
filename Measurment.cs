@@ -218,11 +218,11 @@ namespace KTL_Magnet2
             }
             if (vm.Limit > 0)
             {
-                uss.Write("SENS:" + MeasID(vm.Type) + ":RANG " + visaMeasurments[i].Limit);
+                uss.Write("SENS:" + MeasID(vm.Type) + ":RANG " + vm.Limit);
             }
             if (vm.PLC_time > 0)
             {
-                uss.Write("SENS:" + MeasID(vm.Type) + ":NPLC " + visaMeasurments[i].PLC_time);
+                uss.Write("SENS:" + MeasID(vm.Type) + ":NPLC " + vm.PLC_time);
             }
             if (vm.Delay > 0)
             {
@@ -234,7 +234,7 @@ namespace KTL_Magnet2
             Double.TryParse(uss.ReadString(), NumberStyles.Any, frmt, out result);
             
 
-            if (visaMeasurments[0].Channel > 0)
+            if (vm.Channel > 0)
             {
                 uss.Write("ROUT:OPEN");
             }
