@@ -19,6 +19,12 @@ namespace KTL_Magnet2
     public delegate void LoadSetupDelegate(ExpSetup setup);
     delegate string ErrLine(int x);
     public enum PlotDataType {In, Out_AD, Out_Visa, Readout};
+
+
+    public delegate void ListUpdatedDelegate();
+    public delegate void NewDataDelegate(String name);
+
+
     
     public class MeasController
     {
@@ -51,7 +57,58 @@ namespace KTL_Magnet2
         private List<PlotDataType> PlotTypes = new List<PlotDataType>();
         private List<int> PlotIndices = new List<int>();
 
-        
+        public ListUpdatedDelegate ListUpdated = () => { };
+        public NewDataDelegate NewData = (string name) => { };
+
+        public List<double> RequestData(string name)
+        {
+            int data_id = PlotNames.IndexOf(name);
+            if (data_id == -1) throw new Exception("bad_index");
+            if (PlotTypes[data_id] == PlotDataType.In)
+            {
+                List<double> result = new List<double>();
+                for (int i = 0; i < inputLines.Count; i++)
+                {
+                    if (name == "V1") result.Add(inputLines[i].V1);
+                    if (name == "V2") result.Add(inputLines[i].V2);
+                    if (name == "Sign") result.Add(inputLines[i].Sign);
+                    if (name == "B_setpoint") result.Add(inputLines[i].B_Setpoint);
+                }
+                return result;
+            }
+            if (PlotTypes[data_id] == PlotDataType.Readout) return ReadoutValues;
+            if (PlotTypes[data_id] == PlotDataType.Out_AD)
+            {
+                int index = -1;
+                for (int i = 0; index < expSetup.ad_Measurments.Count; i++)
+                {
+                    if (expSetup.ad_Measurments[i].ch_num == PlotIndices[data_id])
+                    {
+                        index = i; break;
+                    }
+                }
+                List<double> result = new List<double>();
+                for (int i = 0; inputLines.Count > 0; i++)
+                {
+                    result.Add(OutputValues[i, index]);
+                }
+                return result;
+            }
+            if (PlotTypes[data_id] == PlotDataType.Out_Visa)
+            {
+                int first_column = expSetup.ad_Measurments.Count;
+                List<double> result = new List<double>();
+                for (int i =0; i<inputLines.Count;i++)
+                {
+                    result.Add(OutputValues[i, PlotIndices[data_id]]);
+                }
+                return result;
+            }
+
+            throw new Exception("bad_index2");
+            //return null;
+        }
+
 
 
         private void BuildValueNamesList()
@@ -97,11 +154,11 @@ namespace KTL_Magnet2
                 PlotTypes.Add(PlotDataType.Out_Visa);
                 PlotIndices.Add(i);
             }
+            ListUpdated();
         }
 
         public List<string> GetValueNames()
         { return PlotNames; }   
-
 
         public void LoadSetup(ExpSetup setup)
         {
@@ -113,12 +170,12 @@ namespace KTL_Magnet2
                 if (!from_state && to_state)  inputLines.Clear(); 
                 this.expSetup = setup;
                 if (expSetup.UseSetpointCalibrationTables) LoadTables();
+                BuildValueNamesList();
 
             }
             catch (Exception ex){ MessageBox.Show(ex.Message); }
             
         }
-
 
         public bool CheckAvaibleVisaDevices()
 
@@ -131,7 +188,6 @@ namespace KTL_Magnet2
             }
             return result;
         }
-
 
         public void Start()
         {
@@ -206,11 +262,17 @@ namespace KTL_Magnet2
 
                 if ((i!=0) & (inputLines[i].Sign != inputLines[i-1].Sign)) Thread.Sleep(expSetup.ZeroCrossingDelay);
                 msr.SetOutputVolatages(inputLines[i].V1, inputLines[i].V2, inputLines[i].Sign);
+                NewData("V1");
+                NewData("V2");
+                NewData("Sign");
+                if (expSetup.UseSetpointCalibrationTables) NewData("B_setpoint");
+                
                 for (int j = 0;j<expSetup.ad_Measurments.Count;j++)
                 {
                     double measured_value = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
                     OutputValues[i, j] = measured_value;
                     writeOutput(i, j, measured_value);
+                    NewData("AD_" + expSetup.ad_Measurments[i].ch_num.ToString());
                 }
                   
                 for (int j = 0; j < expSetup.visa_Measurments.Count; j++)
@@ -218,12 +280,14 @@ namespace KTL_Magnet2
                     double measured_value = msr.PerformVisaMeasurment(expSetup.visa_Measurments[j]);
                     OutputValues[i, j + first_visa_column] = measured_value;
                     writeOutput(i, j + first_visa_column, measured_value);
+                    NewData("VISA_" + expSetup.visa_Measurments[i].Type.ToString() + "_" + i.ToString());
                 }
                 if (expSetup.UseReadoutCalibrationTables)
                 {
                     double b_readout = CalculateReadoutValue(i);
                     writeReadout(i,b_readout);
-                    ReadoutValues.Add(b_readout);   
+                    ReadoutValues.Add(b_readout);
+                    NewData("B_readout");
                 }
 
             }
@@ -262,9 +326,6 @@ namespace KTL_Magnet2
             return result;
         }
         
-
-
-
         private void LoadTables()
         {
             tables_ready = false;
@@ -308,7 +369,6 @@ namespace KTL_Magnet2
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
-
 
         private void CheckLimits()
         {
@@ -358,7 +418,6 @@ namespace KTL_Magnet2
             return result;
         }
 
-
         private void ScanDevices()
         {
             try
@@ -406,11 +465,7 @@ namespace KTL_Magnet2
             { 
                 expSetup = JsonSerializer.Deserialize<ExpSetup>(fs);
             }
-
+            BuildValueNamesList();
           }
-
-
-
-
     }
 }
