@@ -22,6 +22,8 @@ namespace KTL_Magnet2
 
 
     public delegate void ListUpdatedDelegate();
+    public delegate List<String> RequestDataNamesDelegate();
+    public delegate void PlotFormClosedDelegate(PlotForm plotForm);
     public delegate void NewDataDelegate(String name);
 
 
@@ -59,6 +61,13 @@ namespace KTL_Magnet2
 
         public ListUpdatedDelegate ListUpdated = () => { };
         public NewDataDelegate NewData = (string name) => { };
+
+
+        public void PlotFormClosed (PlotForm plotForm)
+        {
+            NewData -= plotForm.NewData;
+            ListUpdated -= plotForm.ListUpdated;
+        }
 
         public List<double> RequestData(string name)
         {
@@ -108,8 +117,6 @@ namespace KTL_Magnet2
             throw new Exception("bad_index2");
             //return null;
         }
-
-
 
         private void BuildValueNamesList()
         {
