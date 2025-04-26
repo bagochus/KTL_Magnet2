@@ -474,5 +474,73 @@ namespace KTL_Magnet2
             }
             BuildValueNamesList();
           }
+
+        public void SaveTableAsCSV(string filename)
+        {
+            string[] lines = new string[inputLines.Count+1];
+
+            lines[0] = "V1,V2,Sign";
+            for (int i = 0; i < inputLines.Count; i++)
+            {
+                lines[i+1] = inputLines[i].V1.ToString() + ',' +
+                    inputLines[i].V2.ToString() + ',' +
+                    inputLines[i].Sign.ToString();
+            }
+            if (expSetup.UseSetpointCalibrationTables)
+            { 
+                lines[0] += ",B_setpoint";
+                for (int i = 0; i < inputLines.Count; i++)
+                {
+                    lines[i + 1] += "," + inputLines[i].B_Setpoint.ToString();
+                } 
+            }
+            if (!expSetup.UseReadoutCalibrationTables)
+            {
+                lines[0] += ",B_readout";
+                for (int i = 0; i < inputLines.Count; i++)
+                {
+                    lines[i + 1] += ","+ReadoutValues[i].ToString();
+                }
+            }
+            for (int i = 0; i < expSetup.ad_Measurments.Count; i++) 
+            {
+                lines[0] += ",AD_" + expSetup.ad_Measurments[i].ch_num.ToString();
+            }
+            for (int i = 0; i < expSetup.visa_Measurments.Count; i++)
+            {
+                lines[0] += ",VISA_"
+                    + expSetup.visa_Measurments[i].Type.ToString()
+                    + "_" + i.ToString();
+            }
+            for (int i = 0; i < OutputValues.GetLength(0); i++)
+            {
+                string line = "";
+                for (int j = 0; j < OutputValues.GetLength(1); j++)
+                {
+                    line += "," + OutputValues[i, j].ToString();
+                }
+                lines[i + 1] += line;
+            }
+
+            using (StreamWriter writer = new StreamWriter(filename))
+            {
+                foreach (string line in lines)
+                {
+                    writer.WriteLine(line); 
+                }
+            }
+
+
+
+
+
+
+        }
+
+
+
+
+
+
     }
 }
