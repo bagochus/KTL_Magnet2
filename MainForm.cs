@@ -219,39 +219,11 @@ namespace KTL_Magnet2
             Start();           
         } // конпка старт
 
-        public int Start()  // действия при нажатии на старт
+        public void Start()  // действия при нажатии на старт
         {
-            ScanDevices();
+            measController.Start();
 
-            if (!dt_ready)
-            {
-                MessageBox.Show("Ошибка свзяи с блоком ЦПА/АЦП");
-                return 1;
-            }
-            if (ads3 == null) ads3 = new AD_settings(0);
-            msr.ads = ads3;
-            msr.Initialize();
-            if (!msr.Initialized) { return 2; }
-            msr.visaMeasurments = vm;
-
-            if (msr!=null && msr.Initialized && msr.Terminated && dt_ready)
-            {
-
-                int line = 0;
-
-                if (CheckTable(out line))
-                {
-                    LoadTable();
-                //    m_thread = new Thread(msr.Work);
-                    m_thread.Start();
-                    running = true;
-                    Thread t_thread = new Thread(this.Update_Interface);
-                    t_thread.Start();
-                }
-                else MessageBox.Show("Error at line " + (line + 1).ToString());
-            }
-
-            return 0;
+            
         }  
 
         public void WriteNewOutputValue(int row,int column,double value)
@@ -323,17 +295,7 @@ namespace KTL_Magnet2
             return result; 
         }
 
-        public void LoadTable()
 
-        {
-            msr.Prepare(dataGridView1.RowCount - 1);
-            for (int iRow = 0; iRow < dataGridView1.Rows.Count-1; iRow++) 
-            {
-                msr.v_sign[iRow] = int.Parse(dataGridView1.Rows[iRow].Cells[0].Value.ToString());
-                msr.volt1[iRow] = Double.Parse(dataGridView1.Rows[iRow].Cells[1].Value.ToString());
-                msr.volt2[iRow] = Double.Parse(dataGridView1.Rows[iRow].Cells[2].Value.ToString());
-            }
-        }
 
         private void button4_Click(object sender, EventArgs e)
         {
@@ -407,7 +369,44 @@ namespace KTL_Magnet2
         {
             measController.SaveSettings("last.json");
         }
+
+        private void графикToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PlotForm form = new PlotForm(measController);
+            form.Show();
+        }
+
+        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            // Настраиваем параметры диалога
+            saveFileDialog.Filter = "Файлы CSV (*.csv)|*.csv|Все файлы (*.*)|*.*";
+            saveFileDialog.FilterIndex = 1; // Устанавливаем фильтр по умолчанию
+            saveFileDialog.Title = "Сохранить файл";
+            saveFileDialog.DefaultExt = "csv"; // Расширение по умолчанию
+            saveFileDialog.AddExtension = true; // Автоматически добавлять расширение
+            saveFileDialog.OverwritePrompt = true; // Предупреждать о перезаписи файла
+
+            // Показать диалог и проверить, нажал ли пользователь OK
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Здесь код для сохранения файла
+                    string filePath = saveFileDialog.FileName;
+                    measController.SaveTableAsCSV(filePath);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}", "Ошибка",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
     }
+    
 
 
 }

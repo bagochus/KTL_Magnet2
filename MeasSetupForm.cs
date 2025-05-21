@@ -47,6 +47,7 @@ namespace KTL_Magnet2
         {
             params_changed = false;
             InitializeComponent();
+            mc.ScanDevices();
             this.devlist = mc.VisaRes;
 
             if (devlist != null)
@@ -155,6 +156,11 @@ namespace KTL_Magnet2
             textBox_v1srmax.Text = setup.MaxV1SlewRate.ToString();
             textBox_v2srmax.Text = setup.MaxV2SlewRate.ToString();
             textBox_zeroDelay.Text = setup.ZeroCrossingDelay.ToString();
+
+            checkBox_smooth.Checked = setup.UseSmoothZeroCrossing;
+            textBox_smoothdelay.Text = setup.SmoothDelay.ToString();
+            textBox_smoothstep.Text = setup.SmoothStep.ToString();
+
 
         }
 
@@ -290,6 +296,17 @@ namespace KTL_Magnet2
 
                     reading_ok = (result == DialogResult.Yes);
                 }
+
+                localExpSetup.UseSmoothZeroCrossing = checkBox_smooth.Checked;
+                if (localExpSetup.UseSmoothZeroCrossing)
+                {
+                    localExpSetup.SmoothDelay = Int32.Parse (textBox_smoothdelay.Text);
+                    localExpSetup.SmoothStep = double.Parse (textBox_smoothstep.Text);
+                }
+
+
+
+
                 
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); } 

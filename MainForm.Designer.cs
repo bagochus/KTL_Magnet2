@@ -37,7 +37,6 @@
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.plotButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.экспериментыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.добавитьСтрокиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -128,16 +127,6 @@
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(68, 17);
             this.toolStripStatusLabel1.Text = "Hello there!";
             // 
-            // plotButton
-            // 
-            this.plotButton.Location = new System.Drawing.Point(174, 28);
-            this.plotButton.Name = "plotButton";
-            this.plotButton.Size = new System.Drawing.Size(75, 23);
-            this.plotButton.TabIndex = 6;
-            this.plotButton.Text = "График";
-            this.plotButton.UseVisualStyleBackColor = true;
-            this.plotButton.Click += new System.EventHandler(this.plotButton_Click);
-            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -176,8 +165,9 @@
             // сохранитьToolStripMenuItem
             // 
             this.сохранитьToolStripMenuItem.Name = "сохранитьToolStripMenuItem";
-            this.сохранитьToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.сохранитьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.сохранитьToolStripMenuItem.Text = "Сохранить";
+            this.сохранитьToolStripMenuItem.Click += new System.EventHandler(this.сохранитьToolStripMenuItem_Click);
             // 
             // настройкиToolStripMenuItem
             // 
@@ -206,13 +196,13 @@
             this.графикToolStripMenuItem.Name = "графикToolStripMenuItem";
             this.графикToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
             this.графикToolStripMenuItem.Text = "График";
+            this.графикToolStripMenuItem.Click += new System.EventHandler(this.графикToolStripMenuItem_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 383);
-            this.Controls.Add(this.plotButton);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.dataGridView1);
@@ -245,7 +235,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-        private System.Windows.Forms.Button plotButton;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem экспериментыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem добавитьСтрокиToolStripMenuItem;

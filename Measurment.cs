@@ -82,23 +82,12 @@ namespace KTL_Magnet2
         public int n_meas;
         public int n_current;
         public VisaMeasurment[] visaMeasurments;
+        private AD_Controller_dummy ad_controller = new AD_Controller_dummy();
 
 
         public Measurer()
         {
             Terminated = true;
-            Initialized = false;
-        }
-
-        public void Prepare(int n)
-        {
-            n_meas = n;
-            volt1 = new double[n];
-            volt2 = new double[n];
-            v_sign = new int[n];
-            v_readout = new double[n, ads.count];
-            visa_readout = new double[n, visaMeasurments.Count()];
-            n_current = -1;
         }
 
 
@@ -107,35 +96,12 @@ namespace KTL_Magnet2
             try
             {
 
-                deviceMgr1 = DeviceMgr.Get();
-                dev1 = deviceMgr1.GetDevice("DT9806(00)");
-
-                ainp_ss = dev1.AnalogInputSubsystem(0);
-                ainp_ss.DataFlow = DataFlow.SingleValue;
-                ainp_ss.Config();
-
-                // test
-               /* for (int i = 0; i < ads.count; i++)
-                {
-                    ainp_ss.ChannelList.Add(i);
-                    ainp_ss.ChannelList[i].Gain = ads.Gain[i];
-
-                }
-                ainp_ss.Config();
-               */
-
-
-                //test
-
-                aotp_ss = dev1.AnalogOutputSubsystem(0);
-                aotp_ss.Config();
-                dotp_ss = dev1.DigitalOutputSubsystem(0);
-                dotp_ss.Config();
-
-                ainp_ss.GetSingleValueAsVolts(0, 1);
+                ad_controller.Init();
                 Initialized = true;
             }
-            catch (Exception ex) {MessageBox.Show(ex.Message); }
+            catch (Exception ex)
+            {
+            }
 
         }
 
@@ -145,64 +111,27 @@ namespace KTL_Magnet2
             aotp_ss.Dispose();
             dev1.Dispose();
         }
-        public void Work()
-        {
-            Terminated = false;
 
-            for (int i = 0; i < n_meas; i++)
-            {
-
-                if (Terminated) break;
-                if (v_sign[i] == -1) dotp_ss.SetSingleValue(0x3);
-                if (v_sign[i] == 1) dotp_ss.SetSingleValue(0x1);
-
-                aotp_ss.SetSingleValueAsVolts(0, volt1[i]);
-                aotp_ss.SetSingleValueAsVolts(1, volt2[i]);
-
-                for (int j = 0; j < ads.count; j++)
-                {
-
-                    ainp_ss.Config();
-                    Thread.Sleep(ads.Delay[j]);
-                    double tempsum = 0;
-                    for (int k = 0; k < ads.Avg[j]; k++)
-                    {
-                        tempsum += ainp_ss.GetSingleValueAsVolts(ads.ch_num[j], 1);
-                    }
-                    v_readout[i, j] = tempsum / ads.Avg[j];
-                }
-                if (MeasureVisa(ref visa_readout, i) != 0) Terminated = true;
-
-                n_current++;
-            }
-            aotp_ss.SetSingleValueAsVolts(0, 0);
-            aotp_ss.SetSingleValueAsVolts(0, 0);
-
-
-            Dispose_handlers();
-            Terminated = true;
-        }
+       
 
 
         public void SetOutputVolatages(double V1, double V2, int Sign)
         {
-            if (Sign == -1) dotp_ss.SetSingleValue(0x3);
-            if (Sign == 1) dotp_ss.SetSingleValue(0x1);
+            if (Sign == -1) ad_controller.SetDigitalOutput(0x3);
+            if (Sign == 1) ad_controller.SetDigitalOutput(0x1);
 
-            aotp_ss.SetSingleValueAsVolts(0, V1);
-            aotp_ss.SetSingleValueAsVolts(1, V2);
-
+            ad_controller.SetVoltage(V1, 0);
+            ad_controller.SetVoltage(V2, 1);
         }
 
         public double PerformADMeasurment(AD_Measurment ad)
         {
             double result = 0;
-            ainp_ss.Config();
             Thread.Sleep(ad.Delay);
             double tempsum = 0;
             for (int k = 0; k < ad.Avg; k++)
             {
-                tempsum += ainp_ss.GetSingleValueAsVolts(ad.ch_num, 1);
+                tempsum += ad_controller.GetVoltage(ad.ch_num, ad.Gain);
             }
             result = tempsum / ad.Avg;
             return result;

@@ -104,6 +104,10 @@
     <Compile Include="AddLineBForm.Designer.cs">
       <DependentUpon>AddLineBForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="AD_controller.cs" />
+    <Compile Include="AD_controller_dummy_form.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="InterpolationTable.cs" />
     <Compile Include="Measurment\AD_Measurment.cs" />
     <Compile Include="Measurment\ExpSetup.cs" />

@@ -26,6 +26,10 @@ namespace KTL_Magnet2
         public double MaxV2SlewRate { get; set; }
 
         public int ZeroCrossingDelay { get; set; }
+        public bool UseSmoothZeroCrossing {  get; set; }
+        public double SmoothStep { get; set; }
+        public int SmoothDelay { get; set; }
+
         public List<AD_Measurment> ad_Measurments { get; set; }
         public List<VISA_Measurment> visa_Measurments { get; set;}
 

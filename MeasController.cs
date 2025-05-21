@@ -26,12 +26,10 @@ namespace KTL_Magnet2
     public delegate void PlotFormClosedDelegate(PlotForm plotForm);
     public delegate void NewDataDelegate(String name);
 
-
-    
     public class MeasController
     {
         public ExpSetup expSetup = new ExpSetup();
-        private Measurer msr;
+        private Measurer msr = new Measurer();
         private Thread m_thread;
         private bool running = false;
         private bool dt_ready = false;
@@ -97,7 +95,7 @@ namespace KTL_Magnet2
                     }
                 }
                 List<double> result = new List<double>();
-                for (int i = 0; inputLines.Count > 0; i++)
+                for (int i = 0; i < inputLines.Count; i++)
                 {
                     result.Add(OutputValues[i, index]);
                 }
@@ -159,7 +157,7 @@ namespace KTL_Magnet2
             {
                 PlotNames.Add ("VISA_" + expSetup.visa_Measurments[i].Type.ToString() + "_" + i.ToString());
                 PlotTypes.Add(PlotDataType.Out_Visa);
-                PlotIndices.Add(i);
+                PlotIndices.Add(i+expSetup.ad_Measurments.Count);
             }
             ListUpdated();
         }
@@ -189,9 +187,9 @@ namespace KTL_Magnet2
         { 
             bool result = true;
 
-            for (int i = 0; i < vm.Count(); i++) 
+            for (int i = 0; i < expSetup.visa_Measurments.Count; i++) 
             {
-                result &= VisaRes.Contains(vm[i].DeviceName);
+                result &= VisaRes.Contains(expSetup.visa_Measurments[i].DeviceName);
             }
             return result;
         }
@@ -267,7 +265,11 @@ namespace KTL_Magnet2
             {
                 int first_visa_column = expSetup.ad_Measurments.Count;
 
-                if ((i!=0) & (inputLines[i].Sign != inputLines[i-1].Sign)) Thread.Sleep(expSetup.ZeroCrossingDelay);
+                if (i != 0) 
+                {
+                    if ((inputLines[i].Sign != inputLines[i - 1].Sign))
+                        SmoothZeroCrossing(i);
+                }
                 msr.SetOutputVolatages(inputLines[i].V1, inputLines[i].V2, inputLines[i].Sign);
                 NewData("V1");
                 NewData("V2");
@@ -279,7 +281,7 @@ namespace KTL_Magnet2
                     double measured_value = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
                     OutputValues[i, j] = measured_value;
                     writeOutput(i, j, measured_value);
-                    NewData("AD_" + expSetup.ad_Measurments[i].ch_num.ToString());
+                    NewData("AD_" + expSetup.ad_Measurments[j].ch_num.ToString());
                 }
                   
                 for (int j = 0; j < expSetup.visa_Measurments.Count; j++)
@@ -287,7 +289,7 @@ namespace KTL_Magnet2
                     double measured_value = msr.PerformVisaMeasurment(expSetup.visa_Measurments[j]);
                     OutputValues[i, j + first_visa_column] = measured_value;
                     writeOutput(i, j + first_visa_column, measured_value);
-                    NewData("VISA_" + expSetup.visa_Measurments[i].Type.ToString() + "_" + i.ToString());
+                    NewData("VISA_" + expSetup.visa_Measurments[j].Type.ToString() + "_" + j.ToString());
                 }
                 if (expSetup.UseReadoutCalibrationTables)
                 {
@@ -300,6 +302,51 @@ namespace KTL_Magnet2
             }
 
 
+        }
+
+        private void SmoothZeroCrossing(int line)
+        {
+            const double tol = 1e-8;
+            Func<double, double, bool> less_or_equal = (a, b) =>
+            {
+                return ((a - b) < tol);
+            };
+            Func<double,double, bool> greater_or_equal = (a, b) =>
+            {
+                return ((b - a) < tol);
+            };
+
+
+            if (line <0) return;
+            if (line > inputLines.Count - 1) return;
+            if ((inputLines[line].Sign == inputLines[line - 1].Sign)) return;
+            double v1 = inputLines[line].V1;
+            double v2 = inputLines[line].V2;
+            int StartSign = inputLines[line].Sign;
+            int EndSign = (-1) * StartSign;
+
+            msr.SetOutputVolatages(v1, v2, StartSign);
+
+            while (greater_or_equal(v1,0)
+                && greater_or_equal(v2, 0)) 
+            {
+                Thread.Sleep(expSetup.SmoothDelay);
+                v1 -= expSetup.SmoothStep; if (v1 < 0) v1 = 0;
+                v2 -= expSetup.SmoothStep; if (v2 < 0) v2 = 0;
+                msr.SetOutputVolatages(v1, v2, StartSign);
+            } 
+             
+            Thread.Sleep(expSetup.ZeroCrossingDelay);
+            msr.SetOutputVolatages(0, 0, EndSign);
+
+            while (less_or_equal(v1,inputLines[line+1].V1)
+                    && less_or_equal(v2, inputLines[line + 1].V2))
+            {
+                Thread.Sleep(expSetup.SmoothDelay);
+                v1 += expSetup.SmoothStep; if (v1 > inputLines[line + 1].V1) v1 = inputLines[line + 1].V1;
+                v2 += expSetup.SmoothStep; if (v2 > inputLines[line + 1].V2) v2 = inputLines[line + 1].V2;
+                msr.SetOutputVolatages(v1, v2, EndSign);
+            }
         }
 
         private double CalculateReadoutValue(int row)
@@ -359,8 +406,8 @@ namespace KTL_Magnet2
             double temp_V2 = table_setpoint_v2.GetY(line.B_Setpoint);
             if (Math.Sign(temp_V1) == Math.Sign(temp_V2))
             {
-                line.V1 = temp_V1;
-                line.V2 = temp_V2;
+                line.V1 = Math.Abs( temp_V1);
+                line.V2 = Math.Abs( temp_V2);
                 line.Sign = Math.Sign(temp_V1);
             }
             else throw new Exception("В результате преобразования получились управляющие напряжения разных знаков");
@@ -391,20 +438,28 @@ namespace KTL_Magnet2
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
                 if (Math.Abs(inputLines[i+1].V1 - inputLines[1].V1) > expSetup.MaxV1Step)
-                     throw new Exception(error_message + "V1" + errline(i));
+                    if(Math.Sign(inputLines[i + 1].V1) == Math.Sign(inputLines[i + 1].V1)
+                        && !expSetup.UseSmoothZeroCrossing)
+                        throw new Exception(error_message + "V1" + errline(i));
                 if (Math.Abs(inputLines[i + 1].V2 - inputLines[1].V2) > expSetup.MaxV2Step)
-                    throw new Exception(error_message + "V2" + errline(i));
+                    if (Math.Sign(inputLines[i + 1].V2) == Math.Sign(inputLines[i + 1].V2)
+                        && !expSetup.UseSmoothZeroCrossing)
+                        throw new Exception(error_message + "V2" + errline(i));
                 if (Math.Abs(inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint) > expSetup.MaxBStep)
                     throw new Exception(error_message + "B_setpoint" + errline(i));
             }
             error_message = "Превышена скорость нарастания переменной ";
-            double steptime = StepDuration() / 1000;
+            double steptime = (double)StepDuration() / 1000.0;
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
                 if (((inputLines[i + 1].V1 - inputLines[1].V1))/steptime > expSetup.MaxV1SlewRate)
-                    throw new Exception(error_message + "V1" + errline(i));
+                    if (Math.Sign(inputLines[i + 1].V1) == Math.Sign(inputLines[i + 1].V1)
+                        && !expSetup.UseSmoothZeroCrossing)
+                        throw new Exception(error_message + "V1" + errline(i));
                 if (((inputLines[i + 1].V2 - inputLines[1].V2)) / steptime  > expSetup.MaxV2SlewRate)
-                    throw new Exception(error_message + "V2" + errline(i));
+                    if (Math.Sign(inputLines[i + 1].V2) == Math.Sign(inputLines[i + 1].V2)
+                        && !expSetup.UseSmoothZeroCrossing)
+                        throw new Exception(error_message + "V2" + errline(i));
                 if (((inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint)) / steptime  > expSetup.MaxBSlewrate)
                     throw new Exception(error_message + "B_setpoint" + errline(i));
             }
@@ -416,16 +471,18 @@ namespace KTL_Magnet2
 
             for (int i = 0; i < expSetup.ad_Measurments.Count; i++) 
             {
+                if (expSetup.ad_Measurments[i].Delay != -1)
                 result += expSetup.ad_Measurments[i].Delay;
             }
             for (int i = 0; i < expSetup.visa_Measurments.Count; i++)
             {
-                result += expSetup.visa_Measurments[i].Delay;
+                if (expSetup.visa_Measurments[i].Delay != -1)
+                    result += expSetup.visa_Measurments[i].Delay;
             }
             return result;
         }
 
-        private void ScanDevices()
+        public void ScanDevices()
         {
             try
             {
@@ -434,7 +491,8 @@ namespace KTL_Magnet2
                 VisaRes = rm.FindResources("(USB)?*");
                 DeviceMgr dev_mgr = DeviceMgr.Get();
                 String[] OLdevices = dev_mgr.GetDeviceNames();
-                dt_ready = (OLdevices.Length == 1);
+                //dt_ready = (OLdevices.Length == 1);
+                dt_ready = true;
             }
             catch (Exception e) { MessageBox.Show(e.Message); }
         }

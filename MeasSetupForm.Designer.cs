@@ -125,6 +125,11 @@
             this.label31 = new System.Windows.Forms.Label();
             this.textBox_readout_filename = new System.Windows.Forms.TextBox();
             this.checkBox_show_v = new System.Windows.Forms.CheckBox();
+            this.checkBox_smooth = new System.Windows.Forms.CheckBox();
+            this.textBox_smoothstep = new System.Windows.Forms.TextBox();
+            this.textBox_smoothdelay = new System.Windows.Forms.TextBox();
+            this.label32 = new System.Windows.Forms.Label();
+            this.label33 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // onBox0
@@ -286,7 +291,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(536, 521);
+            this.button1.Location = new System.Drawing.Point(537, 539);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 27;
@@ -296,7 +301,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(617, 521);
+            this.button2.Location = new System.Drawing.Point(618, 539);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 28;
@@ -307,7 +312,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(44, 193);
+            this.label4.Location = new System.Drawing.Point(45, 211);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(111, 13);
             this.label4.TabIndex = 29;
@@ -325,28 +330,28 @@
             "Freq",
             "C",
             "T"});
-            this.measBox1.Location = new System.Drawing.Point(133, 242);
+            this.measBox1.Location = new System.Drawing.Point(134, 260);
             this.measBox1.Name = "measBox1";
             this.measBox1.Size = new System.Drawing.Size(89, 21);
             this.measBox1.TabIndex = 30;
             // 
             // channelBox1
             // 
-            this.channelBox1.Location = new System.Drawing.Point(232, 242);
+            this.channelBox1.Location = new System.Drawing.Point(233, 260);
             this.channelBox1.Name = "channelBox1";
             this.channelBox1.Size = new System.Drawing.Size(100, 20);
             this.channelBox1.TabIndex = 31;
             // 
             // limitBox1
             // 
-            this.limitBox1.Location = new System.Drawing.Point(338, 243);
+            this.limitBox1.Location = new System.Drawing.Point(339, 261);
             this.limitBox1.Name = "limitBox1";
             this.limitBox1.Size = new System.Drawing.Size(100, 20);
             this.limitBox1.TabIndex = 32;
             // 
             // timeBox1
             // 
-            this.timeBox1.Location = new System.Drawing.Point(444, 242);
+            this.timeBox1.Location = new System.Drawing.Point(445, 260);
             this.timeBox1.Name = "timeBox1";
             this.timeBox1.Size = new System.Drawing.Size(100, 20);
             this.timeBox1.TabIndex = 33;
@@ -354,7 +359,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(130, 226);
+            this.label5.Location = new System.Drawing.Point(131, 244);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(85, 13);
             this.label5.TabIndex = 34;
@@ -363,7 +368,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(229, 226);
+            this.label6.Location = new System.Drawing.Point(230, 244);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(38, 13);
             this.label6.TabIndex = 35;
@@ -372,7 +377,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(336, 226);
+            this.label7.Location = new System.Drawing.Point(337, 244);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(45, 13);
             this.label7.TabIndex = 36;
@@ -381,7 +386,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(441, 226);
+            this.label8.Location = new System.Drawing.Point(442, 244);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(106, 13);
             this.label8.TabIndex = 37;
@@ -390,7 +395,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(44, 226);
+            this.label9.Location = new System.Drawing.Point(45, 244);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(67, 13);
             this.label9.TabIndex = 38;
@@ -399,7 +404,7 @@
             // deviceBox1
             // 
             this.deviceBox1.FormattingEnabled = true;
-            this.deviceBox1.Location = new System.Drawing.Point(47, 241);
+            this.deviceBox1.Location = new System.Drawing.Point(48, 259);
             this.deviceBox1.Name = "deviceBox1";
             this.deviceBox1.Size = new System.Drawing.Size(80, 21);
             this.deviceBox1.TabIndex = 39;
@@ -407,7 +412,7 @@
             // 
             // delayBox1
             // 
-            this.delayBox1.Location = new System.Drawing.Point(550, 243);
+            this.delayBox1.Location = new System.Drawing.Point(551, 261);
             this.delayBox1.Name = "delayBox1";
             this.delayBox1.Size = new System.Drawing.Size(100, 20);
             this.delayBox1.TabIndex = 40;
@@ -415,7 +420,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(553, 227);
+            this.label10.Location = new System.Drawing.Point(554, 245);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(58, 13);
             this.label10.TabIndex = 41;
@@ -423,7 +428,7 @@
             // 
             // delayBox2
             // 
-            this.delayBox2.Location = new System.Drawing.Point(550, 270);
+            this.delayBox2.Location = new System.Drawing.Point(551, 288);
             this.delayBox2.Name = "delayBox2";
             this.delayBox2.Size = new System.Drawing.Size(100, 20);
             this.delayBox2.TabIndex = 47;
@@ -431,28 +436,28 @@
             // deviceBox2
             // 
             this.deviceBox2.FormattingEnabled = true;
-            this.deviceBox2.Location = new System.Drawing.Point(47, 268);
+            this.deviceBox2.Location = new System.Drawing.Point(48, 286);
             this.deviceBox2.Name = "deviceBox2";
             this.deviceBox2.Size = new System.Drawing.Size(80, 21);
             this.deviceBox2.TabIndex = 46;
             // 
             // timeBox2
             // 
-            this.timeBox2.Location = new System.Drawing.Point(444, 269);
+            this.timeBox2.Location = new System.Drawing.Point(445, 287);
             this.timeBox2.Name = "timeBox2";
             this.timeBox2.Size = new System.Drawing.Size(100, 20);
             this.timeBox2.TabIndex = 45;
             // 
             // limitBox2
             // 
-            this.limitBox2.Location = new System.Drawing.Point(338, 270);
+            this.limitBox2.Location = new System.Drawing.Point(339, 288);
             this.limitBox2.Name = "limitBox2";
             this.limitBox2.Size = new System.Drawing.Size(100, 20);
             this.limitBox2.TabIndex = 44;
             // 
             // channelBox2
             // 
-            this.channelBox2.Location = new System.Drawing.Point(232, 269);
+            this.channelBox2.Location = new System.Drawing.Point(233, 287);
             this.channelBox2.Name = "channelBox2";
             this.channelBox2.Size = new System.Drawing.Size(100, 20);
             this.channelBox2.TabIndex = 43;
@@ -469,14 +474,14 @@
             "Freq",
             "C",
             "T"});
-            this.measBox2.Location = new System.Drawing.Point(133, 269);
+            this.measBox2.Location = new System.Drawing.Point(134, 287);
             this.measBox2.Name = "measBox2";
             this.measBox2.Size = new System.Drawing.Size(89, 21);
             this.measBox2.TabIndex = 42;
             // 
             // delayBox3
             // 
-            this.delayBox3.Location = new System.Drawing.Point(550, 297);
+            this.delayBox3.Location = new System.Drawing.Point(551, 315);
             this.delayBox3.Name = "delayBox3";
             this.delayBox3.Size = new System.Drawing.Size(100, 20);
             this.delayBox3.TabIndex = 53;
@@ -484,28 +489,28 @@
             // deviceBox3
             // 
             this.deviceBox3.FormattingEnabled = true;
-            this.deviceBox3.Location = new System.Drawing.Point(47, 295);
+            this.deviceBox3.Location = new System.Drawing.Point(48, 313);
             this.deviceBox3.Name = "deviceBox3";
             this.deviceBox3.Size = new System.Drawing.Size(80, 21);
             this.deviceBox3.TabIndex = 52;
             // 
             // timeBox3
             // 
-            this.timeBox3.Location = new System.Drawing.Point(444, 296);
+            this.timeBox3.Location = new System.Drawing.Point(445, 314);
             this.timeBox3.Name = "timeBox3";
             this.timeBox3.Size = new System.Drawing.Size(100, 20);
             this.timeBox3.TabIndex = 51;
             // 
             // limitBox3
             // 
-            this.limitBox3.Location = new System.Drawing.Point(338, 297);
+            this.limitBox3.Location = new System.Drawing.Point(339, 315);
             this.limitBox3.Name = "limitBox3";
             this.limitBox3.Size = new System.Drawing.Size(100, 20);
             this.limitBox3.TabIndex = 50;
             // 
             // channelBox3
             // 
-            this.channelBox3.Location = new System.Drawing.Point(232, 296);
+            this.channelBox3.Location = new System.Drawing.Point(233, 314);
             this.channelBox3.Name = "channelBox3";
             this.channelBox3.Size = new System.Drawing.Size(100, 20);
             this.channelBox3.TabIndex = 49;
@@ -522,14 +527,14 @@
             "Freq",
             "C",
             "T"});
-            this.measBox3.Location = new System.Drawing.Point(133, 296);
+            this.measBox3.Location = new System.Drawing.Point(134, 314);
             this.measBox3.Name = "measBox3";
             this.measBox3.Size = new System.Drawing.Size(89, 21);
             this.measBox3.TabIndex = 48;
             // 
             // delayBox4
             // 
-            this.delayBox4.Location = new System.Drawing.Point(550, 324);
+            this.delayBox4.Location = new System.Drawing.Point(551, 342);
             this.delayBox4.Name = "delayBox4";
             this.delayBox4.Size = new System.Drawing.Size(100, 20);
             this.delayBox4.TabIndex = 59;
@@ -537,28 +542,28 @@
             // deviceBox4
             // 
             this.deviceBox4.FormattingEnabled = true;
-            this.deviceBox4.Location = new System.Drawing.Point(47, 322);
+            this.deviceBox4.Location = new System.Drawing.Point(48, 340);
             this.deviceBox4.Name = "deviceBox4";
             this.deviceBox4.Size = new System.Drawing.Size(80, 21);
             this.deviceBox4.TabIndex = 58;
             // 
             // timeBox4
             // 
-            this.timeBox4.Location = new System.Drawing.Point(444, 323);
+            this.timeBox4.Location = new System.Drawing.Point(445, 341);
             this.timeBox4.Name = "timeBox4";
             this.timeBox4.Size = new System.Drawing.Size(100, 20);
             this.timeBox4.TabIndex = 57;
             // 
             // limitBox4
             // 
-            this.limitBox4.Location = new System.Drawing.Point(338, 324);
+            this.limitBox4.Location = new System.Drawing.Point(339, 342);
             this.limitBox4.Name = "limitBox4";
             this.limitBox4.Size = new System.Drawing.Size(100, 20);
             this.limitBox4.TabIndex = 56;
             // 
             // channelBox4
             // 
-            this.channelBox4.Location = new System.Drawing.Point(232, 323);
+            this.channelBox4.Location = new System.Drawing.Point(233, 341);
             this.channelBox4.Name = "channelBox4";
             this.channelBox4.Size = new System.Drawing.Size(100, 20);
             this.channelBox4.TabIndex = 55;
@@ -575,14 +580,14 @@
             "Freq",
             "C",
             "T"});
-            this.measBox4.Location = new System.Drawing.Point(133, 323);
+            this.measBox4.Location = new System.Drawing.Point(134, 341);
             this.measBox4.Name = "measBox4";
             this.measBox4.Size = new System.Drawing.Size(89, 21);
             this.measBox4.TabIndex = 54;
             // 
             // delayBox5
             // 
-            this.delayBox5.Location = new System.Drawing.Point(550, 351);
+            this.delayBox5.Location = new System.Drawing.Point(551, 369);
             this.delayBox5.Name = "delayBox5";
             this.delayBox5.Size = new System.Drawing.Size(100, 20);
             this.delayBox5.TabIndex = 65;
@@ -590,28 +595,28 @@
             // deviceBox5
             // 
             this.deviceBox5.FormattingEnabled = true;
-            this.deviceBox5.Location = new System.Drawing.Point(47, 349);
+            this.deviceBox5.Location = new System.Drawing.Point(48, 367);
             this.deviceBox5.Name = "deviceBox5";
             this.deviceBox5.Size = new System.Drawing.Size(80, 21);
             this.deviceBox5.TabIndex = 64;
             // 
             // timeBox5
             // 
-            this.timeBox5.Location = new System.Drawing.Point(444, 350);
+            this.timeBox5.Location = new System.Drawing.Point(445, 368);
             this.timeBox5.Name = "timeBox5";
             this.timeBox5.Size = new System.Drawing.Size(100, 20);
             this.timeBox5.TabIndex = 63;
             // 
             // limitBox5
             // 
-            this.limitBox5.Location = new System.Drawing.Point(338, 351);
+            this.limitBox5.Location = new System.Drawing.Point(339, 369);
             this.limitBox5.Name = "limitBox5";
             this.limitBox5.Size = new System.Drawing.Size(100, 20);
             this.limitBox5.TabIndex = 62;
             // 
             // channelBox5
             // 
-            this.channelBox5.Location = new System.Drawing.Point(232, 350);
+            this.channelBox5.Location = new System.Drawing.Point(233, 368);
             this.channelBox5.Name = "channelBox5";
             this.channelBox5.Size = new System.Drawing.Size(100, 20);
             this.channelBox5.TabIndex = 61;
@@ -628,7 +633,7 @@
             "Freq",
             "C",
             "T"});
-            this.measBox5.Location = new System.Drawing.Point(133, 350);
+            this.measBox5.Location = new System.Drawing.Point(134, 368);
             this.measBox5.Name = "measBox5";
             this.measBox5.Size = new System.Drawing.Size(89, 21);
             this.measBox5.TabIndex = 60;
@@ -701,7 +706,7 @@
             // checkBox_use_ct_setpoint
             // 
             this.checkBox_use_ct_setpoint.AutoSize = true;
-            this.checkBox_use_ct_setpoint.Location = new System.Drawing.Point(46, 397);
+            this.checkBox_use_ct_setpoint.Location = new System.Drawing.Point(47, 415);
             this.checkBox_use_ct_setpoint.Name = "checkBox_use_ct_setpoint";
             this.checkBox_use_ct_setpoint.Size = new System.Drawing.Size(15, 14);
             this.checkBox_use_ct_setpoint.TabIndex = 71;
@@ -710,7 +715,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(67, 397);
+            this.label11.Location = new System.Drawing.Point(68, 415);
             this.label11.MaximumSize = new System.Drawing.Size(300, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(287, 26);
@@ -720,7 +725,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(401, 397);
+            this.label12.Location = new System.Drawing.Point(402, 415);
             this.label12.MaximumSize = new System.Drawing.Size(300, 0);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(291, 26);
@@ -730,7 +735,7 @@
             // checkBox_use_ct_readout
             // 
             this.checkBox_use_ct_readout.AutoSize = true;
-            this.checkBox_use_ct_readout.Location = new System.Drawing.Point(380, 397);
+            this.checkBox_use_ct_readout.Location = new System.Drawing.Point(381, 415);
             this.checkBox_use_ct_readout.Name = "checkBox_use_ct_readout";
             this.checkBox_use_ct_readout.Size = new System.Drawing.Size(15, 14);
             this.checkBox_use_ct_readout.TabIndex = 73;
@@ -739,7 +744,7 @@
             // comboBox_readout
             // 
             this.comboBox_readout.FormattingEnabled = true;
-            this.comboBox_readout.Location = new System.Drawing.Point(505, 440);
+            this.comboBox_readout.Location = new System.Drawing.Point(506, 458);
             this.comboBox_readout.Name = "comboBox_readout";
             this.comboBox_readout.Size = new System.Drawing.Size(187, 21);
             this.comboBox_readout.TabIndex = 75;
@@ -748,7 +753,7 @@
             // 
             this.label13.AutoSize = true;
             this.label13.CausesValidation = false;
-            this.label13.Location = new System.Drawing.Point(401, 443);
+            this.label13.Location = new System.Drawing.Point(402, 461);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(98, 13);
             this.label13.TabIndex = 76;
@@ -862,7 +867,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(497, 132);
+            this.label21.Location = new System.Drawing.Point(462, 136);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(180, 13);
             this.label21.TabIndex = 90;
@@ -924,21 +929,21 @@
             // 
             // textBox_zeroDelay
             // 
-            this.textBox_zeroDelay.Location = new System.Drawing.Point(500, 155);
+            this.textBox_zeroDelay.Location = new System.Drawing.Point(657, 133);
             this.textBox_zeroDelay.Name = "textBox_zeroDelay";
-            this.textBox_zeroDelay.Size = new System.Drawing.Size(100, 20);
+            this.textBox_zeroDelay.Size = new System.Drawing.Size(92, 20);
             this.textBox_zeroDelay.TabIndex = 97;
             // 
             // textBox_v1_filename
             // 
-            this.textBox_v1_filename.Location = new System.Drawing.Point(208, 462);
+            this.textBox_v1_filename.Location = new System.Drawing.Point(209, 480);
             this.textBox_v1_filename.Name = "textBox_v1_filename";
             this.textBox_v1_filename.Size = new System.Drawing.Size(142, 20);
             this.textBox_v1_filename.TabIndex = 98;
             // 
             // textBox_v2_filename
             // 
-            this.textBox_v2_filename.Location = new System.Drawing.Point(208, 488);
+            this.textBox_v2_filename.Location = new System.Drawing.Point(209, 506);
             this.textBox_v2_filename.Name = "textBox_v2_filename";
             this.textBox_v2_filename.Size = new System.Drawing.Size(142, 20);
             this.textBox_v2_filename.TabIndex = 99;
@@ -946,7 +951,7 @@
             // label28
             // 
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(51, 465);
+            this.label28.Location = new System.Drawing.Point(52, 483);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(154, 13);
             this.label28.TabIndex = 100;
@@ -955,7 +960,7 @@
             // label29
             // 
             this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(93, 488);
+            this.label29.Location = new System.Drawing.Point(94, 506);
             this.label29.Name = "label29";
             this.label29.Size = new System.Drawing.Size(109, 13);
             this.label29.TabIndex = 101;
@@ -964,7 +969,7 @@
             // label30
             // 
             this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(51, 440);
+            this.label30.Location = new System.Drawing.Point(52, 458);
             this.label30.Name = "label30";
             this.label30.Size = new System.Drawing.Size(67, 13);
             this.label30.TabIndex = 102;
@@ -973,7 +978,7 @@
             // label31
             // 
             this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(427, 476);
+            this.label31.Location = new System.Drawing.Point(428, 494);
             this.label31.Name = "label31";
             this.label31.Size = new System.Drawing.Size(67, 13);
             this.label31.TabIndex = 103;
@@ -981,7 +986,7 @@
             // 
             // textBox_readout_filename
             // 
-            this.textBox_readout_filename.Location = new System.Drawing.Point(505, 469);
+            this.textBox_readout_filename.Location = new System.Drawing.Point(506, 487);
             this.textBox_readout_filename.Name = "textBox_readout_filename";
             this.textBox_readout_filename.Size = new System.Drawing.Size(187, 20);
             this.textBox_readout_filename.TabIndex = 104;
@@ -989,18 +994,65 @@
             // checkBox_show_v
             // 
             this.checkBox_show_v.AutoSize = true;
-            this.checkBox_show_v.Location = new System.Drawing.Point(46, 527);
+            this.checkBox_show_v.Location = new System.Drawing.Point(47, 545);
             this.checkBox_show_v.Name = "checkBox_show_v";
             this.checkBox_show_v.Size = new System.Drawing.Size(234, 17);
             this.checkBox_show_v.TabIndex = 105;
             this.checkBox_show_v.Text = "Показывать преобразованные значения";
             this.checkBox_show_v.UseVisualStyleBackColor = true;
             // 
+            // checkBox_smooth
+            // 
+            this.checkBox_smooth.AutoSize = true;
+            this.checkBox_smooth.Location = new System.Drawing.Point(462, 159);
+            this.checkBox_smooth.Name = "checkBox_smooth";
+            this.checkBox_smooth.Size = new System.Drawing.Size(231, 17);
+            this.checkBox_smooth.TabIndex = 106;
+            this.checkBox_smooth.Text = "Использовать плавный переход через 0";
+            this.checkBox_smooth.UseVisualStyleBackColor = true;
+            // 
+            // textBox_smoothstep
+            // 
+            this.textBox_smoothstep.Location = new System.Drawing.Point(502, 182);
+            this.textBox_smoothstep.Name = "textBox_smoothstep";
+            this.textBox_smoothstep.Size = new System.Drawing.Size(100, 20);
+            this.textBox_smoothstep.TabIndex = 107;
+            // 
+            // textBox_smoothdelay
+            // 
+            this.textBox_smoothdelay.Location = new System.Drawing.Point(649, 182);
+            this.textBox_smoothdelay.Name = "textBox_smoothdelay";
+            this.textBox_smoothdelay.Size = new System.Drawing.Size(100, 20);
+            this.textBox_smoothdelay.TabIndex = 108;
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(461, 185);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(34, 13);
+            this.label32.TabIndex = 109;
+            this.label32.Text = "Uшаг";
+            // 
+            // label33
+            // 
+            this.label33.AutoSize = true;
+            this.label33.Location = new System.Drawing.Point(608, 185);
+            this.label33.Name = "label33";
+            this.label33.Size = new System.Drawing.Size(35, 13);
+            this.label33.TabIndex = 110;
+            this.label33.Text = "t_шаг";
+            // 
             // MeasSetupForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(767, 570);
+            this.ClientSize = new System.Drawing.Size(814, 593);
+            this.Controls.Add(this.label33);
+            this.Controls.Add(this.label32);
+            this.Controls.Add(this.textBox_smoothdelay);
+            this.Controls.Add(this.textBox_smoothstep);
+            this.Controls.Add(this.checkBox_smooth);
             this.Controls.Add(this.checkBox_show_v);
             this.Controls.Add(this.textBox_readout_filename);
             this.Controls.Add(this.label31);
@@ -1205,5 +1257,10 @@
         private System.Windows.Forms.Label label31;
         private System.Windows.Forms.TextBox textBox_readout_filename;
         private System.Windows.Forms.CheckBox checkBox_show_v;
+        private System.Windows.Forms.CheckBox checkBox_smooth;
+        private System.Windows.Forms.TextBox textBox_smoothstep;
+        private System.Windows.Forms.TextBox textBox_smoothdelay;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.Label label33;
     }
 }
