@@ -95,7 +95,7 @@ namespace KTL_Magnet2
 
         public void SetVoltage(double value, int channel)
         {
-            if (form != null && !form.IsDisposed)
+            if (!(form == null || form.IsDisposed))
             {
                 form.Invoke((MethodInvoker)(() => form.SetVoltage(value, channel)));
             }
@@ -103,7 +103,7 @@ namespace KTL_Magnet2
 
         public double GetVoltage(int chanell, int gain)
         {
-            if (form != null && !form.IsDisposed)
+            if (!(form == null || form.IsDisposed))
             {
                 return form.GetVoltage(chanell,gain);
             }
@@ -111,7 +111,7 @@ namespace KTL_Magnet2
         }
         public void SetDigitalOutput(byte value)
         {
-            if (form != null && !form.IsDisposed)
+            if (!(form == null || form.IsDisposed))
             {
                 form.Invoke((MethodInvoker)(() => form.SetDigitalOutput(value)));
             }

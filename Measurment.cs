@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using KTL_Magnet2.Measurment;
+using KTL_Magnet2.Measurement;
 using ScottPlot;
 
 namespace KTL_Magnet2
@@ -41,17 +41,17 @@ namespace KTL_Magnet2
         }
     }
 
-    public enum MeasurmentType { r, v_dc, i_dc, v_ac, i_ac, f, c, t }
+    public enum MeasurementType { r, v_dc, i_dc, v_ac, i_ac, f, c, t }
 
-    public class VisaMeasurment
+    public class VisaMeasurement
     {
        public String DeviceName;
-       public MeasurmentType Type;
+       public MeasurementType Type;
        public double PLC_time = -1;
        public double Limit = -1;
        public int Channel = -1;
        public int Delay = -1;
-        public VisaMeasurment() { }
+        public VisaMeasurement() { }
     }
 
 
@@ -81,8 +81,8 @@ namespace KTL_Magnet2
         public double[,] visa_readout;
         public int n_meas;
         public int n_current;
-        public VisaMeasurment[] visaMeasurments;
-        private AD_Controller_dummy ad_controller = new AD_Controller_dummy();
+        public VisaMeasurement[] visaMeasurements;
+        private AD_controller ad_controller = new AD_controller();
 
 
         public Measurer()
@@ -124,7 +124,7 @@ namespace KTL_Magnet2
             ad_controller.SetVoltage(V2, 1);
         }
 
-        public double PerformADMeasurment(AD_Measurment ad)
+        public double PerformADMeasurement(AD_Measurement ad)
         {
             double result = 0;
             Thread.Sleep(ad.Delay);
@@ -137,7 +137,7 @@ namespace KTL_Magnet2
             return result;
         }
 
-        public double PerformVisaMeasurment(VISA_Measurment vm)
+        public double PerformVisaMeasurement(VISA_Measurement vm)
         {
             if (vm.DeviceName == "") return double.NaN;
             UsbSession uss = new UsbSession(vm.DeviceName);
@@ -179,31 +179,31 @@ namespace KTL_Magnet2
 
         private int MeasureVisa(ref double[,] results, int line)
         {
-            for (int i = 0; i < visaMeasurments.Count(); i++)
+            for (int i = 0; i < visaMeasurements.Count(); i++)
             {
-                if (visaMeasurments[i] == null || visaMeasurments[i].DeviceName == "") continue;
-                UsbSession uss = new UsbSession(visaMeasurments[i].DeviceName);
-                if (visaMeasurments[i].Channel > 0)
+                if (visaMeasurements[i] == null || visaMeasurements[i].DeviceName == "") continue;
+                UsbSession uss = new UsbSession(visaMeasurements[i].DeviceName);
+                if (visaMeasurements[i].Channel > 0)
                 {
-                    uss.Write("ROUT:CLOS " + visaMeasurments[i].Channel.ToString());
+                    uss.Write("ROUT:CLOS " + visaMeasurements[i].Channel.ToString());
                 }
-                if (visaMeasurments[i].Limit > 0)
+                if (visaMeasurements[i].Limit > 0)
                 {
-                    uss.Write("SENS:" + MeasID(visaMeasurments[i].Type) + ":RANG " + visaMeasurments[i].Limit);
+                    uss.Write("SENS:" + MeasID(visaMeasurements[i].Type) + ":RANG " + visaMeasurements[i].Limit);
                 }
-                if (visaMeasurments[i].PLC_time > 0)
+                if (visaMeasurements[i].PLC_time > 0)
                 {
-                    uss.Write("SENS:" + MeasID(visaMeasurments[i].Type) + ":NPLC " + visaMeasurments[i].PLC_time);
+                    uss.Write("SENS:" + MeasID(visaMeasurements[i].Type) + ":NPLC " + visaMeasurements[i].PLC_time);
                 }
-                if (visaMeasurments[i].Delay > 0)
+                if (visaMeasurements[i].Delay > 0)
                 {
-                    Thread.Sleep(visaMeasurments[i].Delay);
+                    Thread.Sleep(visaMeasurements[i].Delay);
                 }
-                uss.Write("MEAS:" + MeasID(visaMeasurments[i].Type)+"?");
+                uss.Write("MEAS:" + MeasID(visaMeasurements[i].Type)+"?");
 
                 results[line,i] = double.Parse(uss.ReadString(), frmt);
 
-                if (visaMeasurments[0].Channel > 0)
+                if (visaMeasurements[0].Channel > 0)
                 {
                     uss.Write("ROUT:OPEN");
                 }
@@ -212,18 +212,18 @@ namespace KTL_Magnet2
             return 0;
         }
        
-        private string MeasID(MeasurmentType type)
+        private string MeasID(MeasurementType type)
         {
             switch (type)
             {
-                case MeasurmentType.r: return "RES";
-                case MeasurmentType.v_dc: return "VOLT:DC";
-                case MeasurmentType.i_dc: return "CURR:DC";
-                case MeasurmentType.v_ac: return "VOLT:AC";
-                case MeasurmentType.i_ac: return "CURR:AC";
-                case MeasurmentType.f: return "FREQ";
-                case MeasurmentType.c: return "CAP";
-                case MeasurmentType.t: return "TC";
+                case MeasurementType.r: return "RES";
+                case MeasurementType.v_dc: return "VOLT:DC";
+                case MeasurementType.i_dc: return "CURR:DC";
+                case MeasurementType.v_ac: return "VOLT:AC";
+                case MeasurementType.i_ac: return "CURR:AC";
+                case MeasurementType.f: return "FREQ";
+                case MeasurementType.c: return "CAP";
+                case MeasurementType.t: return "TC";
             }
             return "";
         }

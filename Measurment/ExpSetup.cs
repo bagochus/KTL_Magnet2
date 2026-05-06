@@ -1,4 +1,4 @@
-﻿using KTL_Magnet2.Measurment;
+﻿using KTL_Magnet2.Measurement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +30,8 @@ namespace KTL_Magnet2
         public double SmoothStep { get; set; }
         public int SmoothDelay { get; set; }
 
-        public List<AD_Measurment> ad_Measurments { get; set; }
-        public List<VISA_Measurment> visa_Measurments { get; set;}
+        public List<AD_Measurement> ad_Measurements { get; set; }
+        public List<VISA_Measurement> visa_Measurements { get; set;}
 
         public String v1_filename { get; set; }    
         public String v2_filename { get; set; }
@@ -44,8 +44,8 @@ namespace KTL_Magnet2
 
         public ExpSetup() 
         {
-            ad_Measurments = new List<AD_Measurment>();
-            visa_Measurments = new List<VISA_Measurment>();
+            ad_Measurements = new List<AD_Measurement>();
+            visa_Measurements = new List<VISA_Measurement>();
             readoutSourceType = ReadoutSourceType.None;
             Readout_filename = "";
             v2_filename = "";
@@ -64,6 +64,13 @@ namespace KTL_Magnet2
             MaxBStep = 10;
             MaxBSlewrate = 10;
             ZeroCrossingDelay = 0;
+
+            
+            ZeroCrossingDelay = 100;
+            UseSmoothZeroCrossing = false;
+            SmoothStep = 0.1;
+            SmoothDelay = 100;
+
 
         }
 

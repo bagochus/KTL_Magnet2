@@ -16,6 +16,8 @@ namespace KTL_Magnet2
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            DB_Manager.InitializeDatabase();
+
             Application.Run(new MainForm());
         }
     }

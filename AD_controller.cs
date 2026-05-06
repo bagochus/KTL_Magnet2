@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using KTL_Magnet2.Measurment;
+using KTL_Magnet2.Measurement;
 //using OpenLayers.DeviceCollection;
 
 namespace KTL_Magnet2
@@ -32,6 +32,7 @@ namespace KTL_Magnet2
 
         public void Init()
         {
+            if (initialized) return;
             try
             {
                 deviceMgr1 = DeviceMgr.Get();
@@ -70,7 +71,7 @@ namespace KTL_Magnet2
             double result = double.NaN;
             if (!initialized) return result;
             if (!ainp_ss.SupportedGains.Contains(gain)) return result; 
-            ainp_ss.GetSingleValueAsVolts(chanell, gain);
+            result = ainp_ss.GetSingleValueAsVolts(chanell, gain);
             return result;
         }
 

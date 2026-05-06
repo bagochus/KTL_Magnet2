@@ -12,6 +12,9 @@ using System.Text.Json;
 using System.IO;
 using OpenTK.Graphics.ES20;
 using System.Linq.Expressions;
+using OpenTK.Graphics.OpenGL;
+using System.Security.Cryptography.X509Certificates;
+using System.Globalization;
 
 
 namespace KTL_Magnet2
@@ -31,6 +34,7 @@ namespace KTL_Magnet2
         public ExpSetup expSetup = new ExpSetup();
         private Measurer msr = new Measurer();
         private Thread m_thread;
+        public bool terminated;
         private bool running = false;
         private bool dt_ready = false;
         private bool tables_ready = false;
@@ -41,12 +45,16 @@ namespace KTL_Magnet2
 
         public WriteReadoutValueDelegate writeReadout;
         public WriteOutpuValueDelegate writeOutput;
+        private Action<string> WriteStatus;
+        private Action<int> MarkErrorLine;
+        private Action<int> MarkCompleteLine;
+        private Action ResetTable;
 
 
 
         public AD_settings ad_Settings;
         public String[] VisaRes = new String[0];
-        public VisaMeasurment[] vm;
+        public VisaMeasurement[] vm;
 
         public BindingList<InputLine> inputLines = new BindingList<InputLine>();
         private double[,] OutputValues;
@@ -60,6 +68,14 @@ namespace KTL_Magnet2
         public ListUpdatedDelegate ListUpdated = () => { };
         public NewDataDelegate NewData = (string name) => { };
 
+
+        public MeasController(MainForm form)
+        {
+            WriteStatus = form.WriteStatus;
+            MarkErrorLine = form.MarkErrorLine;
+            MarkCompleteLine = form.MarkCompleteLine;
+            ResetTable = form.ResetTableColors;
+        }
 
         public void PlotFormClosed (PlotForm plotForm)
         {
@@ -87,9 +103,9 @@ namespace KTL_Magnet2
             if (PlotTypes[data_id] == PlotDataType.Out_AD)
             {
                 int index = -1;
-                for (int i = 0; index < expSetup.ad_Measurments.Count; i++)
+                for (int i = 0; index < expSetup.ad_Measurements.Count; i++)
                 {
-                    if (expSetup.ad_Measurments[i].ch_num == PlotIndices[data_id])
+                    if (expSetup.ad_Measurements[i].ch_num == PlotIndices[data_id])
                     {
                         index = i; break;
                     }
@@ -103,7 +119,7 @@ namespace KTL_Magnet2
             }
             if (PlotTypes[data_id] == PlotDataType.Out_Visa)
             {
-                int first_column = expSetup.ad_Measurments.Count;
+                int first_column = expSetup.ad_Measurements.Count;
                 List<double> result = new List<double>();
                 for (int i =0; i<inputLines.Count;i++)
                 {
@@ -147,17 +163,17 @@ namespace KTL_Magnet2
             PlotTypes.Add(PlotDataType.In);
             PlotIndices.Add(3);
 
-            for (int i = 0; i < expSetup.ad_Measurments.Count; i++)
+            for (int i = 0; i < expSetup.ad_Measurements.Count; i++)
             {
-                PlotNames.Add("AD_"+expSetup.ad_Measurments[i].ch_num.ToString());
+                PlotNames.Add("AD_"+expSetup.ad_Measurements[i].ch_num.ToString());
                 PlotTypes.Add(PlotDataType.Out_AD);
                 PlotIndices.Add(i);
             }
-            for (int i = 0; i<expSetup.visa_Measurments.Count; i++)
+            for (int i = 0; i<expSetup.visa_Measurements.Count; i++)
             {
-                PlotNames.Add ("VISA_" + expSetup.visa_Measurments[i].Type.ToString() + "_" + i.ToString());
+                PlotNames.Add ("VISA_" + expSetup.visa_Measurements[i].Type.ToString() + "_" + i.ToString());
                 PlotTypes.Add(PlotDataType.Out_Visa);
-                PlotIndices.Add(i+expSetup.ad_Measurments.Count);
+                PlotIndices.Add(i+expSetup.ad_Measurements.Count);
             }
             ListUpdated();
         }
@@ -187,17 +203,21 @@ namespace KTL_Magnet2
         { 
             bool result = true;
 
-            for (int i = 0; i < expSetup.visa_Measurments.Count; i++) 
+            for (int i = 0; i < expSetup.visa_Measurements.Count; i++) 
             {
-                result &= VisaRes.Contains(expSetup.visa_Measurments[i].DeviceName);
+                result &= VisaRes.Contains(expSetup.visa_Measurements[i].DeviceName);
             }
-            return result;
+            //return result;
+            return true;
         }
 
         public void Start()
         {
+            
 
             ScanDevices();
+            ResetTable();
+
 
             if (!dt_ready)
             {
@@ -245,7 +265,7 @@ namespace KTL_Magnet2
                 return;
             }
 
-            int columns = expSetup.ad_Measurments.Count + expSetup.visa_Measurments.Count;
+            int columns = expSetup.ad_Measurements.Count + expSetup.visa_Measurements.Count;
             int rows = inputLines.Count;
             OutputValues = new double[rows,columns];
             ReadoutValues.Clear();
@@ -255,41 +275,51 @@ namespace KTL_Magnet2
                 m_thread = new Thread(this.Work);
                 m_thread.Start();
                 running = true;
+                terminated = false;
             }
 
         }
 
         private void Work()
         {
-            for (int i = 0; i < inputLines.Count; i++) 
+            int i = 0;
+            for (; i < inputLines.Count; i++) 
             {
-                int first_visa_column = expSetup.ad_Measurments.Count;
+                if (terminated) break;
 
+                WriteStatus("Выполнение эксперимента " + (i+1).ToString() + "/" + inputLines.Count.ToString());
+                int first_visa_column = expSetup.ad_Measurements.Count;
+                bool need_smooth_transition = false;
                 if (i != 0) 
                 {
-                    if ((inputLines[i].Sign != inputLines[i - 1].Sign))
-                        SmoothZeroCrossing(i);
+                    need_smooth_transition = (inputLines[i].Sign != inputLines[i - 1].Sign);
+                    need_smooth_transition |= Math.Abs(inputLines[i].V1 - inputLines[i - 1].V1) > expSetup.MaxV1Step;
+                    need_smooth_transition |= Math.Abs(inputLines[i].V2 - inputLines[i - 1].V2) > expSetup.MaxV2Step;
+                    need_smooth_transition &= expSetup.UseSmoothZeroCrossing;
                 }
+                if (need_smooth_transition) SmoothTransition(i-1);
+
+
                 msr.SetOutputVolatages(inputLines[i].V1, inputLines[i].V2, inputLines[i].Sign);
                 NewData("V1");
                 NewData("V2");
                 NewData("Sign");
                 if (expSetup.UseSetpointCalibrationTables) NewData("B_setpoint");
                 
-                for (int j = 0;j<expSetup.ad_Measurments.Count;j++)
+                for (int j = 0;j<expSetup.ad_Measurements.Count;j++)
                 {
-                    double measured_value = msr.PerformADMeasurment(expSetup.ad_Measurments[j]);
+                    double measured_value = msr.PerformADMeasurement(expSetup.ad_Measurements[j]);
                     OutputValues[i, j] = measured_value;
                     writeOutput(i, j, measured_value);
-                    NewData("AD_" + expSetup.ad_Measurments[j].ch_num.ToString());
+                    NewData("AD_" + expSetup.ad_Measurements[j].ch_num.ToString());
                 }
                   
-                for (int j = 0; j < expSetup.visa_Measurments.Count; j++)
+                for (int j = 0; j < expSetup.visa_Measurements.Count; j++)
                 {
-                    double measured_value = msr.PerformVisaMeasurment(expSetup.visa_Measurments[j]);
+                    double measured_value = msr.PerformVisaMeasurement(expSetup.visa_Measurements[j]);
                     OutputValues[i, j + first_visa_column] = measured_value;
                     writeOutput(i, j + first_visa_column, measured_value);
-                    NewData("VISA_" + expSetup.visa_Measurments[j].Type.ToString() + "_" + j.ToString());
+                    NewData("VISA_" + expSetup.visa_Measurements[j].Type.ToString() + "_" + j.ToString());
                 }
                 if (expSetup.UseReadoutCalibrationTables)
                 {
@@ -298,55 +328,127 @@ namespace KTL_Magnet2
                     ReadoutValues.Add(b_readout);
                     NewData("B_readout");
                 }
-
+                MarkCompleteLine(i);
             }
-
-
+            string final_text = "Измерения остановлены";
+            if (i >= inputLines.Count)
+            {
+                final_text = "Измерения завершены";
+                i = inputLines.Count - 1;
+            }
+            SmoothShutdown(inputLines[i].V1, inputLines[i].V2, inputLines[i].Sign);
+            WriteStatus(final_text);
         }
 
-        private void SmoothZeroCrossing(int line)
+        private void SmoothTransition(int line)
         {
             const double tol = 1e-8;
             Func<double, double, bool> less_or_equal = (a, b) =>
             {
-                return ((a - b) < tol);
+                bool eq = Math.Abs(a - b) < tol;
+                return (eq || (a < b - tol));
             };
             Func<double,double, bool> greater_or_equal = (a, b) =>
             {
-                return ((b - a) < tol);
+                bool eq = Math.Abs(a - b) < tol;
+                return (eq || (a > b + tol));
+            };
+            Func<double, double, bool> less = (a, b) =>
+            {
+                return (a < b-tol);
+            };
+            Func<double, double, bool> greater = (a, b) =>
+            {
+                return (a > b + tol);
+            };
+            Func<double, double, bool> equal = (a, b) =>
+            {
+                return Math.Abs(a - b) < tol;
             };
 
 
             if (line <0) return;
             if (line > inputLines.Count - 1) return;
-            if ((inputLines[line].Sign == inputLines[line - 1].Sign)) return;
-            double v1 = inputLines[line].V1;
-            double v2 = inputLines[line].V2;
+            bool zero_crossing = ((inputLines[line].Sign != inputLines[line + 1].Sign));
+            double v1_start = inputLines[line].V1;
+            double v2_start = inputLines[line].V2;
+            double v1_final = inputLines[line+1].V1;
+            double v2_final = inputLines[line+1].V2;
+            double v1 = v1_start;
+            double v2 = v2_start;
+
             int StartSign = inputLines[line].Sign;
-            int EndSign = (-1) * StartSign;
+            int EndSign = inputLines[line+1].Sign;
 
             msr.SetOutputVolatages(v1, v2, StartSign);
+            WriteStatus("Выполняется плавный переходный процесс");
 
-            while (greater_or_equal(v1,0)
-                && greater_or_equal(v2, 0)) 
-            {
-                Thread.Sleep(expSetup.SmoothDelay);
-                v1 -= expSetup.SmoothStep; if (v1 < 0) v1 = 0;
-                v2 -= expSetup.SmoothStep; if (v2 < 0) v2 = 0;
-                msr.SetOutputVolatages(v1, v2, StartSign);
-            } 
-             
-            Thread.Sleep(expSetup.ZeroCrossingDelay);
-            msr.SetOutputVolatages(0, 0, EndSign);
 
-            while (less_or_equal(v1,inputLines[line+1].V1)
-                    && less_or_equal(v2, inputLines[line + 1].V2))
+            if (zero_crossing)
             {
-                Thread.Sleep(expSetup.SmoothDelay);
-                v1 += expSetup.SmoothStep; if (v1 > inputLines[line + 1].V1) v1 = inputLines[line + 1].V1;
-                v2 += expSetup.SmoothStep; if (v2 > inputLines[line + 1].V2) v2 = inputLines[line + 1].V2;
-                msr.SetOutputVolatages(v1, v2, EndSign);
+
+                while (greater(v1, 0) && greater(v2, 0))
+                {
+                    Thread.Sleep(expSetup.SmoothDelay);
+                    v1 -= expSetup.SmoothStep; if (v1 < 0) v1 = 0;
+                    v2 -= expSetup.SmoothStep; if (v2 < 0) v2 = 0;
+                    msr.SetOutputVolatages(v1, v2, StartSign);
+                }
+
+                Thread.Sleep(expSetup.ZeroCrossingDelay);
+                msr.SetOutputVolatages(0, 0, EndSign);
+
+                while (less(v1, v1_final)
+                        && less(v2, v2_final))
+                {
+                    Thread.Sleep(expSetup.SmoothDelay);
+                    v1 += expSetup.SmoothStep; if (v1 > v1_final) v1 = v1_final;
+                    v2 += expSetup.SmoothStep; if (v2 > v2_final) v2 = v1_final;
+                    msr.SetOutputVolatages(v1, v2, EndSign);
+                }
             }
+            else
+            {
+                int v1_sign = Math.Sign(v1_final - v1_start);
+                int v2_sign = Math.Sign(v2_final - v2_start);
+
+                while (!(equal(v1, v1_final) && equal(v2, v2_final)))        
+                {
+                    Thread.Sleep(expSetup.SmoothDelay);
+                    v1 += v1_sign * expSetup.SmoothStep; if (v1_final - v1 < v1_sign * tol) v1 = v1_final;
+                    v2 += v2_sign * expSetup.SmoothStep; if (v2_final - v2 < v2_sign * tol) v2 = v2_final;
+                    msr.SetOutputVolatages(v1, v2, StartSign);
+                }
+            }
+
+
+
+
+
+        }
+
+        private void SmoothShutdown(double curr_v1, double curr_v2, int curr_sign)
+        {
+            double vstep = 0.1;
+            int delay = 100;
+            double v1 = curr_v1;
+            double v2 = curr_v2;
+
+            WriteStatus("Завершение эксперимента...");
+            if (!expSetup.UseSmoothZeroCrossing)
+            {
+                vstep = expSetup.SmoothStep;
+                delay = expSetup.SmoothDelay;
+            }
+            while (v1 > 1e-8 && v2 > 1e-8)
+            {
+                Thread.Sleep(delay);
+                v1 -= vstep; if (v1 < 0) v1 = 0;
+                v2 -= vstep; if (v2 < 0) v2 = 0;
+                msr.SetOutputVolatages(v1, v2, curr_sign);
+            }
+            msr.SetOutputVolatages(0, 0, 1);
+
         }
 
         private double CalculateReadoutValue(int row)
@@ -357,9 +459,9 @@ namespace KTL_Magnet2
             if (expSetup.readoutSourceType == ReadoutSourceType.AD)
             {
                 int ad_index=-1;
-                for (int i = 0; i < expSetup.ad_Measurments.Count; i++)
+                for (int i = 0; i < expSetup.ad_Measurements.Count; i++)
                 {
-                    if (expSetup.ad_Measurments[i].ch_num == expSetup.readoutSourceId)
+                    if (expSetup.ad_Measurements[i].ch_num == expSetup.readoutSourceId)
                     {
                         ad_index = i;
                         break;
@@ -370,7 +472,7 @@ namespace KTL_Magnet2
             }
             if (expSetup.readoutSourceType == ReadoutSourceType.Visa)
             {
-                int first_visa_column = expSetup.ad_Measurments.Count;
+                int first_visa_column = expSetup.ad_Measurements.Count;
                 input_value = OutputValues[row, expSetup.readoutSourceId + first_visa_column];
             }
             if (input_value != double.NaN)
@@ -437,30 +539,41 @@ namespace KTL_Magnet2
             error_message = "Превышен шаг переменной ";
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
-                if (Math.Abs(inputLines[i+1].V1 - inputLines[1].V1) > expSetup.MaxV1Step)
-                    if(Math.Sign(inputLines[i + 1].V1) == Math.Sign(inputLines[i + 1].V1)
-                        && !expSetup.UseSmoothZeroCrossing)
+                bool skip_value = false;
+                if (expSetup.UseSetpointCalibrationTables)
+                {
+                    skip_value = Math.Abs(inputLines[i].B_Setpoint) < 0.01 || Math.Abs(inputLines[i + 1].B_Setpoint) < 0.01;
+                    skip_value |= inputLines[i].Sign != inputLines[i+1].Sign;
+                    skip_value &= expSetup.UseSmoothZeroCrossing;
+                }
+                if (skip_value) continue;
+
+
+                if (Math.Abs(inputLines[i+1].V1 - inputLines[i].V1) > expSetup.MaxV1Step)
                         throw new Exception(error_message + "V1" + errline(i));
-                if (Math.Abs(inputLines[i + 1].V2 - inputLines[1].V2) > expSetup.MaxV2Step)
-                    if (Math.Sign(inputLines[i + 1].V2) == Math.Sign(inputLines[i + 1].V2)
-                        && !expSetup.UseSmoothZeroCrossing)
+                if (Math.Abs(inputLines[i + 1].V2 - inputLines[i].V2) > expSetup.MaxV2Step)
                         throw new Exception(error_message + "V2" + errline(i));
-                if (Math.Abs(inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint) > expSetup.MaxBStep)
+                if (Math.Abs(inputLines[i + 1].B_Setpoint - inputLines[i].B_Setpoint) > expSetup.MaxBStep)
                     throw new Exception(error_message + "B_setpoint" + errline(i));
             }
             error_message = "Превышена скорость нарастания переменной ";
             double steptime = (double)StepDuration() / 1000.0;
             for (int i = 0; i < inputLines.Count - 1; i++)
             {
-                if (((inputLines[i + 1].V1 - inputLines[1].V1))/steptime > expSetup.MaxV1SlewRate)
-                    if (Math.Sign(inputLines[i + 1].V1) == Math.Sign(inputLines[i + 1].V1)
-                        && !expSetup.UseSmoothZeroCrossing)
+                bool skip_value = false;
+                if (expSetup.UseSetpointCalibrationTables)
+                {
+                    skip_value = Math.Abs(inputLines[i].B_Setpoint) < 0.01 || Math.Abs(inputLines[i + 1].B_Setpoint) < 0.01;
+                    skip_value |= inputLines[i].Sign != inputLines[i + 1].Sign;
+                    skip_value &= expSetup.UseSmoothZeroCrossing;
+                }
+                if (skip_value) continue;
+
+                if (Math.Abs(inputLines[i + 1].V1 - inputLines[i].V1)/steptime > expSetup.MaxV1SlewRate)
                         throw new Exception(error_message + "V1" + errline(i));
-                if (((inputLines[i + 1].V2 - inputLines[1].V2)) / steptime  > expSetup.MaxV2SlewRate)
-                    if (Math.Sign(inputLines[i + 1].V2) == Math.Sign(inputLines[i + 1].V2)
-                        && !expSetup.UseSmoothZeroCrossing)
+                if (Math.Abs(inputLines[i + 1].V2 - inputLines[i].V2) / steptime  > expSetup.MaxV2SlewRate)
                         throw new Exception(error_message + "V2" + errline(i));
-                if (((inputLines[i + 1].B_Setpoint - inputLines[1].B_Setpoint)) / steptime  > expSetup.MaxBSlewrate)
+                if (Math.Abs(inputLines[i + 1].B_Setpoint - inputLines[i].B_Setpoint) / steptime  > expSetup.MaxBSlewrate)
                     throw new Exception(error_message + "B_setpoint" + errline(i));
             }
         }
@@ -469,15 +582,15 @@ namespace KTL_Magnet2
         {
             int result = 0;
 
-            for (int i = 0; i < expSetup.ad_Measurments.Count; i++) 
+            for (int i = 0; i < expSetup.ad_Measurements.Count; i++) 
             {
-                if (expSetup.ad_Measurments[i].Delay != -1)
-                result += expSetup.ad_Measurments[i].Delay;
+                if (expSetup.ad_Measurements[i].Delay != -1)
+                result += expSetup.ad_Measurements[i].Delay;
             }
-            for (int i = 0; i < expSetup.visa_Measurments.Count; i++)
+            for (int i = 0; i < expSetup.visa_Measurements.Count; i++)
             {
-                if (expSetup.visa_Measurments[i].Delay != -1)
-                    result += expSetup.visa_Measurments[i].Delay;
+                if (expSetup.visa_Measurements[i].Delay != -1)
+                    result += expSetup.visa_Measurements[i].Delay;
             }
             return result;
         }
@@ -485,16 +598,24 @@ namespace KTL_Magnet2
         public void ScanDevices()
         {
             try
+            {     
+                DeviceMgr dev_mgr = DeviceMgr.Get();
+                String[] OLdevices = dev_mgr.GetDeviceNames();
+                dt_ready = (OLdevices.Length == 1);
+
+
+                //dt_ready = true;
+            }
+            catch (Exception e) { MessageBox.Show(e.Message); }
+
+            try
             {
                 ResourceManager rm;
                 rm = ResourceManager.GetLocalManager();
                 VisaRes = rm.FindResources("(USB)?*");
-                DeviceMgr dev_mgr = DeviceMgr.Get();
-                String[] OLdevices = dev_mgr.GetDeviceNames();
-                //dt_ready = (OLdevices.Length == 1);
-                dt_ready = true;
             }
-            catch (Exception e) { MessageBox.Show(e.Message); }
+            catch { WriteStatus("Не удалось загрузить менеджер ресурсов VISA"); }
+
         }
 
         public void AddExperiment(double B)
@@ -537,11 +658,16 @@ namespace KTL_Magnet2
         {
             string[] lines = new string[inputLines.Count+1];
 
+            var nfi = new NumberFormatInfo
+            {
+                NumberDecimalSeparator = ","
+            };
+
             lines[0] = "V1,V2,Sign";
             for (int i = 0; i < inputLines.Count; i++)
             {
-                lines[i+1] = inputLines[i].V1.ToString() + ',' +
-                    inputLines[i].V2.ToString() + ',' +
+                lines[i+1] = inputLines[i].V1.ToString(nfi) + ',' +
+                    inputLines[i].V2.ToString(nfi) + ',' +
                     inputLines[i].Sign.ToString();
             }
             if (expSetup.UseSetpointCalibrationTables)
@@ -549,7 +675,7 @@ namespace KTL_Magnet2
                 lines[0] += ",B_setpoint";
                 for (int i = 0; i < inputLines.Count; i++)
                 {
-                    lines[i + 1] += "," + inputLines[i].B_Setpoint.ToString();
+                    lines[i + 1] += "," + inputLines[i].B_Setpoint.ToString(nfi);
                 } 
             }
             if (!expSetup.UseReadoutCalibrationTables)
@@ -557,25 +683,25 @@ namespace KTL_Magnet2
                 lines[0] += ",B_readout";
                 for (int i = 0; i < inputLines.Count; i++)
                 {
-                    lines[i + 1] += ","+ReadoutValues[i].ToString();
+                    lines[i + 1] += ","+ReadoutValues[i].ToString(nfi);
                 }
             }
-            for (int i = 0; i < expSetup.ad_Measurments.Count; i++) 
+            for (int i = 0; i < expSetup.ad_Measurements.Count; i++) 
             {
-                lines[0] += ",AD_" + expSetup.ad_Measurments[i].ch_num.ToString();
+                lines[0] += ",AD_" + expSetup.ad_Measurements[i].ch_num.ToString(nfi);
             }
-            for (int i = 0; i < expSetup.visa_Measurments.Count; i++)
+            for (int i = 0; i < expSetup.visa_Measurements.Count; i++)
             {
                 lines[0] += ",VISA_"
-                    + expSetup.visa_Measurments[i].Type.ToString()
-                    + "_" + i.ToString();
+                    + expSetup.visa_Measurements[i].Type.ToString()
+                    + "_" + i.ToString(nfi);
             }
             for (int i = 0; i < OutputValues.GetLength(0); i++)
             {
                 string line = "";
                 for (int j = 0; j < OutputValues.GetLength(1); j++)
                 {
-                    line += "," + OutputValues[i, j].ToString();
+                    line += "," + OutputValues[i, j].ToString(nfi);
                 }
                 lines[i + 1] += line;
             }
@@ -588,7 +714,7 @@ namespace KTL_Magnet2
                 }
             }
 
-
+            
 
 
 
@@ -596,6 +722,66 @@ namespace KTL_Magnet2
         }
 
 
+        public void SaveTableAsTxt(string filename)
+        {
+            string[] lines = new string[inputLines.Count + 1];
+
+            lines[0] = "V1\tV2\tSign";
+            for (int i = 0; i < inputLines.Count; i++)
+            {
+                lines[i + 1] = inputLines[i].V1.ToString() + '\t' +
+                    inputLines[i].V2.ToString() + '\t' +
+                    inputLines[i].Sign.ToString();
+            }
+            if (expSetup.UseSetpointCalibrationTables)
+            {
+                lines[0] += "\tB_setpoint";
+                for (int i = 0; i < inputLines.Count; i++)
+                {
+                    lines[i + 1] += "\t" + inputLines[i].B_Setpoint.ToString();
+                }
+            }
+            if (expSetup.UseReadoutCalibrationTables)
+            {
+                lines[0] += "\tB_readout";
+                for (int i = 0; i < inputLines.Count; i++)
+                {
+                    lines[i + 1] += "\t" + ReadoutValues[i].ToString();
+                }
+            }
+            for (int i = 0; i < expSetup.ad_Measurements.Count; i++)
+            {
+                lines[0] += "\tAD_" + expSetup.ad_Measurements[i].ch_num.ToString();
+            }
+            for (int i = 0; i < expSetup.visa_Measurements.Count; i++)
+            {
+                lines[0] += "\tVISA_"
+                    + expSetup.visa_Measurements[i].Type.ToString()
+                    + "_" + i.ToString();
+            }
+            for (int i = 0; i < OutputValues.GetLength(0); i++)
+            {
+                string line = "";
+                for (int j = 0; j < OutputValues.GetLength(1); j++)
+                {
+                    line += "\t" + OutputValues[i, j].ToString();
+                }
+                lines[i + 1] += line;
+            }
+
+            using (StreamWriter writer = new StreamWriter(filename))
+            {
+                foreach (string line in lines)
+                {
+                    writer.WriteLine(line);
+                }
+            }
+
+
+
+
+
+        }
 
 
 

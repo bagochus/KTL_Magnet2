@@ -102,6 +102,7 @@
             this.checkBox_autoupdate.TabIndex = 6;
             this.checkBox_autoupdate.Text = "Автообновление";
             this.checkBox_autoupdate.UseVisualStyleBackColor = true;
+            this.checkBox_autoupdate.CheckedChanged += new System.EventHandler(this.checkBox_autoupdate_CheckedChanged);
             // 
             // button_update
             // 

@@ -42,7 +42,7 @@ namespace KTL_Magnet2
             this.plotFormClosed = measController.PlotFormClosed;
             ValueNames = measController.GetValueNames();
             RequestData = measController.RequestData;
-            checkBox_autoupdate.DataBindings.Add(new Binding("Checked", this, "AutoUpdate"));
+            //checkBox_autoupdate.DataBindings.Add(new Binding("Checked", this, "AutoUpdate"));
             comboBox_xname.Items.AddRange(ValueNames.ToArray());
             comboBox_yname.Items.AddRange(ValueNames.ToArray());
         }
@@ -109,6 +109,11 @@ namespace KTL_Magnet2
         {
             Replot();
             ListUpdated();
+        }
+
+        private void checkBox_autoupdate_CheckedChanged(object sender, EventArgs e)
+        {
+            AutoUpdate = checkBox_autoupdate.Checked;
         }
     }
 }

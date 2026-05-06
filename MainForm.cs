@@ -1,18 +1,20 @@
-﻿using System;
+﻿using NationalInstruments.VisaNS;
+using OpenLayers.Base;
+using ScottPlot;
+using ScottPlot.Control;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using OpenLayers.Base;
-using System.Threading;
-using NationalInstruments.VisaNS;
-using System.IO;
-using System.Globalization;
 using System.Xml.Serialization;
 
 
@@ -23,15 +25,15 @@ namespace KTL_Magnet2
     public delegate void WriteReadoutValueDelegate(int row, double value);
 
     public partial class MainForm : Form
-    {   
-        MeasController measController = new MeasController();
+    {
+        MeasController measController;
         Measurer msr;
         AD_settings ads3;
         Thread m_thread;
         bool running = false;
         bool dt_ready = false;
         String[] VisaRes;
-        VisaMeasurment[] vm;
+        VisaMeasurement[] vm;
 
         private int InputColumns; 
 
@@ -41,6 +43,7 @@ namespace KTL_Magnet2
             InitializeComponent();
             //msr = new Measurer();
             //msr.Initialize();
+            measController = new MeasController(this);
             running = false;
             ScanDevices();
             measController.writeOutput = WriteNewOutputValue;
@@ -48,8 +51,7 @@ namespace KTL_Magnet2
 
             try { measController.LoadSettings("last.json"); }
             catch {
-                measController = new MeasController();
-                
+                measController = new MeasController(this);   
                 MessageBox.Show("Не удалось загрузить предыдущие настройки"); }
             BuildTable();
 
@@ -107,14 +109,14 @@ namespace KTL_Magnet2
                 InputColumns++;
             }
 
-            for (int i = 0; i < measController.expSetup.ad_Measurments.Count; i++)
+            for (int i = 0; i < measController.expSetup.ad_Measurements.Count; i++)
             {
-                AddFloatColumn("AD_" + measController.expSetup.ad_Measurments[i].ch_num.ToString());
+                AddFloatColumn("AD_" + measController.expSetup.ad_Measurements[i].ch_num.ToString());
             }
 
-            for (int i = 0; i < measController.expSetup.visa_Measurments.Count; i++) 
+            for (int i = 0; i < measController.expSetup.visa_Measurements.Count; i++) 
             {
-                AddFloatColumn("VISA_" + measController.expSetup.visa_Measurments[i].Type.ToString());
+                AddFloatColumn("VISA_" + measController.expSetup.visa_Measurements[i].Type.ToString());
             }
             
 
@@ -249,57 +251,28 @@ namespace KTL_Magnet2
 
         }
 
-        public void UpdateTable()
+        private void LoadProfile()
         {
-            int count = dataGridView1.ColumnCount;
-            for (int iCol = 3;iCol < count; iCol++) 
-            {
-                dataGridView1.Columns.RemoveAt(3);
-            }
-            for (int i = 0; i < ads3.count;i++)
-            {
-                dataGridView1.Columns.Add("col" + i.ToString(), "V" + ads3.ch_num[i].ToString());
-            }
-            for (int i = 0; i < vm.Count(); i++)
-            {
-                dataGridView1.Columns.Add("vcol" + i.ToString(), vm[i].Type.ToString() + "_" + i.ToString() );
-            }
+            SelectProfileForm form = new SelectProfileForm();   
+            form.ShowDialog();
+            if (form.selected_name != null) DB_Manager.LoadProfile(form.selected_name);
+        }
+
+      /*  private void SaveProfile()
+        {
+            string userInput = Interaction.InputBox("Введите ширину активной области в пикселях:",
+                "Определение активной области",
+                "1024");
 
 
         }
-
-        public bool CheckTable(out int line)
-        {
-            line = 0;
-            bool result = true;
-            for(int iRow = 0;iRow < dataGridView1.Rows.Count-1;iRow++)
-            {
-                int sign = 0;
-
-                result = Int32.TryParse(dataGridView1.Rows[iRow].Cells[0].Value.ToString(), out sign);
-                result = ((sign==-1)||(sign==1));
-                if (!result)
-                {
-                    line = iRow;
-                    break;
-                }
-                double v = 0;
-                result = Double.TryParse(dataGridView1.Rows[iRow].Cells[1].Value.ToString(), out v);
-                if (result) result = Double.TryParse(dataGridView1.Rows[iRow].Cells[2].Value.ToString(), out v);
-                if (!result)
-                {
-                    line = iRow;
-                    break;
-                }
-            }
-            return result; 
-        }
+      */
 
 
 
         private void button4_Click(object sender, EventArgs e)
         {
-            if (!msr.Terminated) { msr.Terminated = true; }
+            measController.terminated = true;
         }
 
 
@@ -404,6 +377,102 @@ namespace KTL_Magnet2
                                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            dataGridView1.Width = this.Width-50;
+            dataGridView1.Height = this.Height-120;
+        }
+
+        private void очиститьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            measController.inputLines.Clear();
+        }
+
+        public void WriteStatus(string status)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<string>(WriteStatus), new object[] { status });
+                return;
+            }
+            toolStripStatusLabel1.Text = status;
+        }
+
+        public void MarkErrorLine(int line)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<int>(MarkErrorLine), new object[] { line });
+                return;
+            }
+            if (line >= dataGridView1.RowCount) return;
+            dataGridView1.Rows[line].DefaultCellStyle.BackColor = System.Drawing.Color.LightPink;
+        }
+
+        public void MarkCompleteLine(int line)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<int>(MarkCompleteLine), new object[] { line });
+                return;
+            }
+            if (line >= dataGridView1.RowCount) return;
+            dataGridView1.Rows[line].DefaultCellStyle.BackColor = System.Drawing.Color.LightGreen;
+        }
+
+        public void ResetTableColors()
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action(ResetTableColors), new object[] {  });
+                return;
+            }
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+            }
+        }
+
+        private void сохранитьКакTXTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            // Настраиваем параметры диалога
+            saveFileDialog.Filter = "Файлы TXT (*.txt)|*.txt|Все файлы (*.*)|*.*";
+            saveFileDialog.FilterIndex = 1; // Устанавливаем фильтр по умолчанию
+            saveFileDialog.Title = "Сохранить файл";
+            saveFileDialog.DefaultExt = "txt"; // Расширение по умолчанию
+            saveFileDialog.AddExtension = true; // Автоматически добавлять расширение
+            saveFileDialog.OverwritePrompt = true; // Предупреждать о перезаписи файла
+
+            // Показать диалог и проверить, нажал ли пользователь OK
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Здесь код для сохранения файла
+                    string filePath = saveFileDialog.FileName;
+                    measController.SaveTableAsTxt(filePath);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при сохранении файла: {ex.Message}", "Ошибка",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void загрузитьНаборИзмеренийToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadProfile();
+        }
+
+        private void сохранитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
     
