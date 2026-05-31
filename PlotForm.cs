@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 
@@ -16,66 +17,115 @@ namespace KTL_Magnet2
     public delegate List<double> RequestDataDelegate(string name);
 
 
+
+
+
+
     public partial class PlotForm : Form
     {
+        
+        
+        
+        
         //readonly FormsPlot FormsPlot1 = new FormsPlot() { Dock = DockStyle.Fill };
 
-        private List<String> ValueNames;
-        private RequestDataDelegate RequestData;
-        public PlotFormClosedDelegate plotFormClosed;
-        private RequestDataNamesDelegate RequestDataNames;
-        public bool AutoUpdate { get; set; }
-        private bool new_x = false;
-        private bool new_y = false;
+        private List<String> ValueNames = new List<string>();
+        //private RequestDataDelegate RequestData;
+        //public PlotFormClosedDelegate plotFormClosed;
+        //private RequestDataNamesDelegate RequestDataNames;
+        //public bool AutoUpdate { get; set; }
+        //private bool new_x = false;
+        //private bool new_y = false;
         private String x_name = "";
         private String y_name = "";
         private List<double> x_values;
         private List<double> y_values;
+        private readonly object _lockObject = new object();
 
 
-        public PlotForm(MeasController measController)
+        private async Task<List<double>> RequestData(string name)
+        {
+
+            if (!MagnetController.table.Columns.Contains(name))
+                return null;
+            List<double> result = new List<double>();
+            await Task.Run(() =>
+            {
+                lock (MagnetController.table)
+                {
+                    for (int i = 0; i < MagnetController.table.Rows.Count; i++)
+                    {
+                        var value = MagnetController.table.Rows[i][name];
+
+                        if (value != DBNull.Value)
+                        {
+                            result.Add(Convert.ToDouble(value));
+                        }
+                    }
+                }
+            });
+            return result;
+        }
+
+
+        private async Task UpdateData()
+        {
+            if (!MagnetController.table.Columns.Contains(x_name) ||
+                !MagnetController.table.Columns.Contains(y_name))
+                return;
+            List<double> result = new List<double>();
+            await Task.Run(() =>
+            {
+                lock (MagnetController.table)
+                {
+                    for (int i = x_values.Count; i < MagnetController.table.Rows.Count; i++)
+                    {
+                        var x_value = MagnetController.table.Rows[i][x_name];
+                        var y_value = MagnetController.table.Rows[i][x_name];
+
+                        if (x_value != DBNull.Value && y_value != DBNull.Value)
+                        {
+                            x_values.Add(Convert.ToDouble(x_value));
+                            y_values.Add(Convert.ToDouble(y_value));
+                        }
+                    }
+                }
+            });
+        }
+
+        public PlotForm()
         {
             InitializeComponent();
-            measController.ListUpdated += this.ListUpdated;
-            measController.NewData += this.NewData;
-            RequestDataNames = measController.GetValueNames;
-            this.plotFormClosed = measController.PlotFormClosed;
-            ValueNames = measController.GetValueNames();
-            RequestData = measController.RequestData;
+            MagnetController.DataUpdated += this.ListUpdated;
+
+
             //checkBox_autoupdate.DataBindings.Add(new Binding("Checked", this, "AutoUpdate"));
-            comboBox_xname.Items.AddRange(ValueNames.ToArray());
-            comboBox_yname.Items.AddRange(ValueNames.ToArray());
-        }
 
-         public void ListUpdated()
-         {
-            if (AutoUpdate) ValueNames = RequestDataNames();
-            comboBox_xname.Items.Clear();
-            comboBox_yname.Items.Clear();
-            comboBox_xname.Items.AddRange(ValueNames.ToArray());
-            comboBox_yname.Items.AddRange(ValueNames.ToArray());
-        }
-
-        public void NewData(string name)
-        {
-            if(!AutoUpdate) return;
-            new_x = (x_name == name);
-            new_y = (y_name == name);
-            if (new_x && new_y) 
+            for (int i = 0; i < MagnetController.table.Columns.Count; i++)
             {
-                Replot();
-                new_x = false;
-                new_y = false;
+                ValueNames.Add(MagnetController.table.Columns[i].ColumnName);
+            }
+            
+            comboBox_xname.Items.AddRange(ValueNames.ToArray());
+            comboBox_yname.Items.AddRange(ValueNames.ToArray());
+        }
+
+        private async void ListUpdated(object sender, EventArgs e)
+        {
+            if (x_name == "" || y_name == "") return;
+            lock (_lockObject) 
+            {
+                await UpdateData();
             }
         }
 
-        private void Replot()
+        private async void Replot()
         {
             if (x_name == "" || y_name == "") return;
             try
             {
-                x_values = RequestData(x_name);
-                y_values = RequestData(y_name);
+                x_values = await RequestData(x_name);
+                y_values = await RequestData(y_name);
                 formsPlot1.Plot.Clear();
                 formsPlot1.Plot.Add.Scatter(x_values, y_values);
                 formsPlot1.Refresh();
@@ -95,7 +145,7 @@ namespace KTL_Magnet2
 
         private void PlotForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            plotFormClosed(this);
+            //MagnetController.DataUpdated -= 
         }
 
         private void PlotForm_Resize(object sender, EventArgs e)
@@ -105,15 +155,8 @@ namespace KTL_Magnet2
             formsPlot1.Refresh();
         }
 
-        private void button_update_Click(object sender, EventArgs e)
-        {
-            Replot();
-            ListUpdated();
-        }
 
-        private void checkBox_autoupdate_CheckedChanged(object sender, EventArgs e)
-        {
-            AutoUpdate = checkBox_autoupdate.Checked;
-        }
+
+
     }
 }

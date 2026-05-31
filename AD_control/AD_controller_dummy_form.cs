@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace KTL_Magnet2
 {
     public class AD_controller_dummy_form : Form
@@ -80,41 +81,6 @@ namespace KTL_Magnet2
         {
             Random random = new Random();
             return Math.Round(random.NextDouble() * 10, 2);
-        }
-    }
-
-    public class AD_Controller_dummy
-    {
-        private AD_controller_dummy_form form;
-
-        public void Init()
-        {
-            form = new AD_controller_dummy_form();
-            form.Show();
-        }
-
-        public void SetVoltage(double value, int channel)
-        {
-            if (!(form == null || form.IsDisposed))
-            {
-                form.Invoke((MethodInvoker)(() => form.SetVoltage(value, channel)));
-            }
-        }
-
-        public double GetVoltage(int chanell, int gain)
-        {
-            if (!(form == null || form.IsDisposed))
-            {
-                return form.GetVoltage(chanell,gain);
-            }
-            return 0;
-        }
-        public void SetDigitalOutput(byte value)
-        {
-            if (!(form == null || form.IsDisposed))
-            {
-                form.Invoke((MethodInvoker)(() => form.SetDigitalOutput(value)));
-            }
         }
     }
 }

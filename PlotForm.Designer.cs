@@ -34,8 +34,6 @@
             this.comboBox_yname = new System.Windows.Forms.ComboBox();
             this.formsPlot1 = new ScottPlot.WinForms.FormsPlot();
             this.button_Plot = new System.Windows.Forms.Button();
-            this.checkBox_autoupdate = new System.Windows.Forms.CheckBox();
-            this.button_update = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -91,36 +89,11 @@
             this.button_Plot.UseVisualStyleBackColor = true;
             this.button_Plot.Click += new System.EventHandler(this.button1_Click);
             // 
-            // checkBox_autoupdate
-            // 
-            this.checkBox_autoupdate.AutoSize = true;
-            this.checkBox_autoupdate.Checked = true;
-            this.checkBox_autoupdate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_autoupdate.Location = new System.Drawing.Point(295, 33);
-            this.checkBox_autoupdate.Name = "checkBox_autoupdate";
-            this.checkBox_autoupdate.Size = new System.Drawing.Size(110, 17);
-            this.checkBox_autoupdate.TabIndex = 6;
-            this.checkBox_autoupdate.Text = "Автообновление";
-            this.checkBox_autoupdate.UseVisualStyleBackColor = true;
-            this.checkBox_autoupdate.CheckedChanged += new System.EventHandler(this.checkBox_autoupdate_CheckedChanged);
-            // 
-            // button_update
-            // 
-            this.button_update.Location = new System.Drawing.Point(295, 6);
-            this.button_update.Name = "button_update";
-            this.button_update.Size = new System.Drawing.Size(101, 23);
-            this.button_update.TabIndex = 7;
-            this.button_update.Text = "Обновить";
-            this.button_update.UseVisualStyleBackColor = true;
-            this.button_update.Click += new System.EventHandler(this.button_update_Click);
-            // 
             // PlotForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
-            this.Controls.Add(this.button_update);
-            this.Controls.Add(this.checkBox_autoupdate);
             this.Controls.Add(this.button_Plot);
             this.Controls.Add(this.formsPlot1);
             this.Controls.Add(this.comboBox_yname);
@@ -145,7 +118,5 @@
         private System.Windows.Forms.ComboBox comboBox_yname;
         private ScottPlot.WinForms.FormsPlot formsPlot1;
         private System.Windows.Forms.Button button_Plot;
-        private System.Windows.Forms.CheckBox checkBox_autoupdate;
-        private System.Windows.Forms.Button button_update;
     }
 }

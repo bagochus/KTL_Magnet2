@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KTL_Magnet2", "KTL_Magnet2.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AD_ModuleTester", "..\AD_ModuleTester\AD_ModuleTester.csproj", "{94A6FC34-9678-4C57-B35C-177F88537717}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KTL_Magnet3", "..\KTL_Magnet3\KTL_Magnet3.csproj", "{14832905-7228-4FF8-BC25-F6B47F2D0654}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{94A6FC34-9678-4C57-B35C-177F88537717}.Release|Any CPU.Build.0 = Release|Any CPU
 		{94A6FC34-9678-4C57-B35C-177F88537717}.Release|x86.ActiveCfg = Release|Any CPU
 		{94A6FC34-9678-4C57-B35C-177F88537717}.Release|x86.Build.0 = Release|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Debug|x86.Build.0 = Debug|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Release|x86.ActiveCfg = Release|Any CPU
+		{14832905-7228-4FF8-BC25-F6B47F2D0654}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

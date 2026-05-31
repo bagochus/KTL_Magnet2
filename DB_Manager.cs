@@ -1,4 +1,4 @@
-﻿using KTL_Magnet2.Measurement;
+﻿using KTL_Magnet2.Measurements;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;

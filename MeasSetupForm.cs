@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using KTL_Magnet2.Measurement;
+using KTL_Magnet2.Measurements;
 using System.IO;
 using System.Text.Json;
 using static System.Runtime.CompilerServices.Unsafe;

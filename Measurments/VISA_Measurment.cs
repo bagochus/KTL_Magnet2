@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KTL_Magnet2.Measurement
+namespace KTL_Magnet2.Measurements
 {
     public class VISA_Measurement
     {

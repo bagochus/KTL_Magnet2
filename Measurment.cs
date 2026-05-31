@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using KTL_Magnet2.Measurement;
+using KTL_Magnet2.Measurements;
 using ScottPlot;
 
 namespace KTL_Magnet2
@@ -137,7 +137,7 @@ namespace KTL_Magnet2
             return result;
         }
 
-        public double PerformVisaMeasurement(VISA_Measurement vm)
+       /* public double PerformVisaMeasurement(VISA_Measurement vm)
         {
             if (vm.DeviceName == "") return double.NaN;
             UsbSession uss = new UsbSession(vm.DeviceName);
@@ -170,7 +170,7 @@ namespace KTL_Magnet2
 
             return result;
         }
-
+       */
         public void FinalActions()
         {
             aotp_ss.SetSingleValueAsVolts(0, 0);

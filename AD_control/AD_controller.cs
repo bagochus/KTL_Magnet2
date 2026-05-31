@@ -7,12 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using KTL_Magnet2.Measurement;
+using KTL_Magnet2.Measurements;
 //using OpenLayers.DeviceCollection;
 
 namespace KTL_Magnet2
 {
-    public class AD_controller: IDisposable
+    public class AD_controller: IDisposable, IADController
     {
         private DeviceMgr deviceMgr1;
         private Device dev1;
@@ -22,6 +22,11 @@ namespace KTL_Magnet2
         DigitalOutputSubsystem dotp_ss;
         bool initialized = false;
         bool _disposed = false;
+
+        public int AvaiableChannels { get; private set; }
+        public double[] AvaiableGains { get; private set; }
+
+
 
         public AD_controller() 
         {
@@ -47,6 +52,12 @@ namespace KTL_Magnet2
                 dotp_ss = dev1.DigitalOutputSubsystem(0);
                 dotp_ss.Config();
 
+                AvaiableChannels = ainp_ss.SupportedChannels.Count;
+                AvaiableGains = (double[])ainp_ss.SupportedGains.Clone();
+
+                
+                    
+                
                 //double test = ainp_ss.GetSingleValueAsVolts(0, 1);
                 initialized = true;
             }
@@ -56,6 +67,7 @@ namespace KTL_Magnet2
                 aotp_ss?.Dispose();
                 ainp_ss?.Dispose();
                 dotp_ss?.Dispose();
+
 
             }
         }
