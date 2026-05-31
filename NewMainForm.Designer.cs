@@ -30,9 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             this.panel_status = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.label_v2 = new System.Windows.Forms.Label();
+            this.label_v1 = new System.Windows.Forms.Label();
             this.label_breadout = new System.Windows.Forms.Label();
             this.label_bsetpoint = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -40,8 +39,6 @@
             this.radioButton_list = new System.Windows.Forms.RadioButton();
             this.radioButton_fromto = new System.Windows.Forms.RadioButton();
             this.panel_fromto = new System.Windows.Forms.Panel();
-            this.button_stop_fromto = new System.Windows.Forms.Button();
-            this.button_start_fromto = new System.Windows.Forms.Button();
             this.checkBox_path_to_zero = new System.Windows.Forms.CheckBox();
             this.checkBox_reverse = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -56,16 +53,14 @@
             this.button_edit_blist = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox_bset_delay_list = new System.Windows.Forms.TextBox();
-            this.button_stop_list = new System.Windows.Forms.Button();
-            this.button_start_list = new System.Windows.Forms.Button();
             this.panel_steady = new System.Windows.Forms.Panel();
             this.label_increment = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button_refresh = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.label_outer_value = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.textBox_steady_delay = new System.Windows.Forms.TextBox();
             this.textBox_outer_value = new System.Windows.Forms.TextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,16 +68,16 @@
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.textBox_b_level = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.button_stop = new System.Windows.Forms.Button();
+            this.button_start = new System.Windows.Forms.Button();
             this.button_settings = new System.Windows.Forms.Button();
             this.button_measurement = new System.Windows.Forms.Button();
             this.button_data = new System.Windows.Forms.Button();
             this.button_plot = new System.Windows.Forms.Button();
             this.textBox_filename = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
-            this.button_openfile = new System.Windows.Forms.Button();
-            this.button_showfolder = new System.Windows.Forms.Button();
+            this.label_pol = new System.Windows.Forms.Label();
+            this.label_status = new System.Windows.Forms.Label();
             this.panel_status.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panel_fromto.SuspendLayout();
@@ -93,9 +88,10 @@
             // 
             // panel_status
             // 
-            this.panel_status.Controls.Add(this.label3);
-            this.panel_status.Controls.Add(this.label2);
-            this.panel_status.Controls.Add(this.label1);
+            this.panel_status.Controls.Add(this.label_status);
+            this.panel_status.Controls.Add(this.label_pol);
+            this.panel_status.Controls.Add(this.label_v2);
+            this.panel_status.Controls.Add(this.label_v1);
             this.panel_status.Controls.Add(this.label_breadout);
             this.panel_status.Controls.Add(this.label_bsetpoint);
             this.panel_status.Location = new System.Drawing.Point(12, 12);
@@ -103,35 +99,25 @@
             this.panel_status.Size = new System.Drawing.Size(434, 281);
             this.panel_status.TabIndex = 0;
             // 
-            // label3
+            // label_v2
             // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(16, 199);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(140, 24);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Полярность: ";
+            this.label_v2.AutoSize = true;
+            this.label_v2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_v2.Location = new System.Drawing.Point(16, 162);
+            this.label_v2.Name = "label_v2";
+            this.label_v2.Size = new System.Drawing.Size(241, 24);
+            this.label_v2.TabIndex = 2;
+            this.label_v2.Text = "U2 =  V (контроль тока)";
             // 
-            // label2
+            // label_v1
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label2.Location = new System.Drawing.Point(16, 162);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(241, 24);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "U2 =  V (контроль тока)";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(16, 127);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(317, 24);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "U1 =  V (контроль напряжения)";
+            this.label_v1.AutoSize = true;
+            this.label_v1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_v1.Location = new System.Drawing.Point(16, 127);
+            this.label_v1.Name = "label_v1";
+            this.label_v1.Size = new System.Drawing.Size(317, 24);
+            this.label_v1.TabIndex = 1;
+            this.label_v1.Text = "U1 =  V (контроль напряжения)";
             // 
             // label_breadout
             // 
@@ -203,8 +189,6 @@
             // 
             // panel_fromto
             // 
-            this.panel_fromto.Controls.Add(this.button_stop_fromto);
-            this.panel_fromto.Controls.Add(this.button_start_fromto);
             this.panel_fromto.Controls.Add(this.checkBox_path_to_zero);
             this.panel_fromto.Controls.Add(this.checkBox_reverse);
             this.panel_fromto.Controls.Add(this.label7);
@@ -215,28 +199,10 @@
             this.panel_fromto.Controls.Add(this.textBox_b_step);
             this.panel_fromto.Controls.Add(this.textBox_b_end);
             this.panel_fromto.Controls.Add(this.textBox_b_start);
-            this.panel_fromto.Location = new System.Drawing.Point(799, 27);
+            this.panel_fromto.Location = new System.Drawing.Point(676, 27);
             this.panel_fromto.Name = "panel_fromto";
-            this.panel_fromto.Size = new System.Drawing.Size(434, 195);
+            this.panel_fromto.Size = new System.Drawing.Size(333, 195);
             this.panel_fromto.TabIndex = 2;
-            // 
-            // button_stop_fromto
-            // 
-            this.button_stop_fromto.Location = new System.Drawing.Point(340, 73);
-            this.button_stop_fromto.Name = "button_stop_fromto";
-            this.button_stop_fromto.Size = new System.Drawing.Size(75, 50);
-            this.button_stop_fromto.TabIndex = 11;
-            this.button_stop_fromto.Text = "СТОП";
-            this.button_stop_fromto.UseVisualStyleBackColor = true;
-            // 
-            // button_start_fromto
-            // 
-            this.button_start_fromto.Location = new System.Drawing.Point(340, 19);
-            this.button_start_fromto.Name = "button_start_fromto";
-            this.button_start_fromto.Size = new System.Drawing.Size(75, 48);
-            this.button_start_fromto.TabIndex = 10;
-            this.button_start_fromto.Text = "СТАРТ";
-            this.button_start_fromto.UseVisualStyleBackColor = true;
             // 
             // checkBox_path_to_zero
             // 
@@ -327,11 +293,9 @@
             this.panel_list.Controls.Add(this.button_edit_blist);
             this.panel_list.Controls.Add(this.label8);
             this.panel_list.Controls.Add(this.textBox_bset_delay_list);
-            this.panel_list.Controls.Add(this.button_stop_list);
-            this.panel_list.Controls.Add(this.button_start_list);
-            this.panel_list.Location = new System.Drawing.Point(799, 236);
+            this.panel_list.Location = new System.Drawing.Point(676, 236);
             this.panel_list.Name = "panel_list";
-            this.panel_list.Size = new System.Drawing.Size(434, 195);
+            this.panel_list.Size = new System.Drawing.Size(333, 195);
             this.panel_list.TabIndex = 3;
             // 
             // button_edit_blist
@@ -359,42 +323,21 @@
             this.textBox_bset_delay_list.Size = new System.Drawing.Size(100, 20);
             this.textBox_bset_delay_list.TabIndex = 14;
             // 
-            // button_stop_list
-            // 
-            this.button_stop_list.Location = new System.Drawing.Point(340, 73);
-            this.button_stop_list.Name = "button_stop_list";
-            this.button_stop_list.Size = new System.Drawing.Size(75, 50);
-            this.button_stop_list.TabIndex = 13;
-            this.button_stop_list.Text = "СТОП";
-            this.button_stop_list.UseVisualStyleBackColor = true;
-            // 
-            // button_start_list
-            // 
-            this.button_start_list.Location = new System.Drawing.Point(340, 19);
-            this.button_start_list.Name = "button_start_list";
-            this.button_start_list.Size = new System.Drawing.Size(75, 48);
-            this.button_start_list.TabIndex = 12;
-            this.button_start_list.Text = "СТАРТ";
-            this.button_start_list.UseVisualStyleBackColor = true;
-            // 
             // panel_steady
             // 
             this.panel_steady.Controls.Add(this.label_increment);
             this.panel_steady.Controls.Add(this.label12);
-            this.panel_steady.Controls.Add(this.button1);
             this.panel_steady.Controls.Add(this.label11);
             this.panel_steady.Controls.Add(this.label_outer_value);
             this.panel_steady.Controls.Add(this.label9);
-            this.panel_steady.Controls.Add(this.textBox3);
+            this.panel_steady.Controls.Add(this.textBox_steady_delay);
             this.panel_steady.Controls.Add(this.textBox_outer_value);
             this.panel_steady.Controls.Add(this.radioButton5);
             this.panel_steady.Controls.Add(this.radioButton4);
             this.panel_steady.Controls.Add(this.textBox_b_level);
-            this.panel_steady.Controls.Add(this.button2);
-            this.panel_steady.Controls.Add(this.button3);
             this.panel_steady.Location = new System.Drawing.Point(12, 309);
             this.panel_steady.Name = "panel_steady";
-            this.panel_steady.Size = new System.Drawing.Size(434, 195);
+            this.panel_steady.Size = new System.Drawing.Size(333, 195);
             this.panel_steady.TabIndex = 4;
             // 
             // label_increment
@@ -414,14 +357,14 @@
             this.label12.TabIndex = 21;
             this.label12.Text = "Shift+Enter - инкремент / Ctrl+Enter - обновление величины";
             // 
-            // button1
+            // button_refresh
             // 
-            this.button1.Location = new System.Drawing.Point(340, 129);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 50);
-            this.button1.TabIndex = 6;
-            this.button1.Text = "Обновить значения";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button_refresh.Location = new System.Drawing.Point(362, 421);
+            this.button_refresh.Name = "button_refresh";
+            this.button_refresh.Size = new System.Drawing.Size(75, 50);
+            this.button_refresh.TabIndex = 6;
+            this.button_refresh.Text = "Обновить значения";
+            this.button_refresh.UseVisualStyleBackColor = true;
             // 
             // label11
             // 
@@ -450,12 +393,12 @@
             this.label9.TabIndex = 18;
             this.label9.Text = "Индукция поля, Тл";
             // 
-            // textBox3
+            // textBox_steady_delay
             // 
-            this.textBox3.Location = new System.Drawing.Point(134, 80);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 20);
-            this.textBox3.TabIndex = 17;
+            this.textBox_steady_delay.Location = new System.Drawing.Point(134, 80);
+            this.textBox_steady_delay.Name = "textBox_steady_delay";
+            this.textBox_steady_delay.Size = new System.Drawing.Size(100, 20);
+            this.textBox_steady_delay.TabIndex = 17;
             // 
             // textBox_outer_value
             // 
@@ -515,23 +458,24 @@
             this.textBox_b_level.Size = new System.Drawing.Size(100, 20);
             this.textBox_b_level.TabIndex = 14;
             // 
-            // button2
+            // button_stop
             // 
-            this.button2.Location = new System.Drawing.Point(340, 73);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 50);
-            this.button2.TabIndex = 13;
-            this.button2.Text = "СТОП";
-            this.button2.UseVisualStyleBackColor = true;
+            this.button_stop.Location = new System.Drawing.Point(362, 365);
+            this.button_stop.Name = "button_stop";
+            this.button_stop.Size = new System.Drawing.Size(75, 50);
+            this.button_stop.TabIndex = 13;
+            this.button_stop.Text = "СТОП";
+            this.button_stop.UseVisualStyleBackColor = true;
             // 
-            // button3
+            // button_start
             // 
-            this.button3.Location = new System.Drawing.Point(340, 19);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 48);
-            this.button3.TabIndex = 12;
-            this.button3.Text = "СТАРТ";
-            this.button3.UseVisualStyleBackColor = true;
+            this.button_start.Location = new System.Drawing.Point(362, 311);
+            this.button_start.Name = "button_start";
+            this.button_start.Size = new System.Drawing.Size(75, 48);
+            this.button_start.TabIndex = 12;
+            this.button_start.Text = "СТАРТ";
+            this.button_start.UseVisualStyleBackColor = true;
+            this.button_start.Click += new System.EventHandler(this.button_start_Click);
             // 
             // button_settings
             // 
@@ -571,6 +515,7 @@
             this.button_plot.TabIndex = 8;
             this.button_plot.Text = "График";
             this.button_plot.UseVisualStyleBackColor = true;
+            this.button_plot.Click += new System.EventHandler(this.button_plot_Click);
             // 
             // textBox_filename
             // 
@@ -589,32 +534,34 @@
             this.label10.TabIndex = 23;
             this.label10.Text = "Имя файла для сохранения";
             // 
-            // button_openfile
+            // label_pol
             // 
-            this.button_openfile.Location = new System.Drawing.Point(456, 389);
-            this.button_openfile.Name = "button_openfile";
-            this.button_openfile.Size = new System.Drawing.Size(91, 23);
-            this.button_openfile.TabIndex = 24;
-            this.button_openfile.Text = "Отрыть файл";
-            this.button_openfile.UseVisualStyleBackColor = true;
+            this.label_pol.AutoSize = true;
+            this.label_pol.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_pol.Location = new System.Drawing.Point(16, 199);
+            this.label_pol.Name = "label_pol";
+            this.label_pol.Size = new System.Drawing.Size(140, 24);
+            this.label_pol.TabIndex = 3;
+            this.label_pol.Text = "Полярность: ";
             // 
-            // button_showfolder
+            // label_status
             // 
-            this.button_showfolder.Location = new System.Drawing.Point(563, 389);
-            this.button_showfolder.Name = "button_showfolder";
-            this.button_showfolder.Size = new System.Drawing.Size(96, 23);
-            this.button_showfolder.TabIndex = 25;
-            this.button_showfolder.Text = "Открыть папку";
-            this.button_showfolder.UseVisualStyleBackColor = true;
+            this.label_status.AutoSize = true;
+            this.label_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_status.Location = new System.Drawing.Point(19, 233);
+            this.label_status.MaximumSize = new System.Drawing.Size(380, 0);
+            this.label_status.Name = "label_status";
+            this.label_status.Size = new System.Drawing.Size(43, 24);
+            this.label_status.TabIndex = 4;
+            this.label_status.Text = "___";
             // 
             // NewMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1256, 584);
-            this.Controls.Add(this.button_showfolder);
-            this.Controls.Add(this.button_openfile);
+            this.ClientSize = new System.Drawing.Size(1031, 529);
             this.Controls.Add(this.label10);
+            this.Controls.Add(this.button_refresh);
             this.Controls.Add(this.textBox_filename);
             this.Controls.Add(this.button_data);
             this.Controls.Add(this.button_plot);
@@ -624,7 +571,9 @@
             this.Controls.Add(this.panel_list);
             this.Controls.Add(this.panel_fromto);
             this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.button_stop);
             this.Controls.Add(this.panel_status);
+            this.Controls.Add(this.button_start);
             this.Name = "NewMainForm";
             this.Text = "NewMainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.NewMainForm_FormClosing);
@@ -649,9 +598,8 @@
         private System.Windows.Forms.Panel panel_status;
         private System.Windows.Forms.Label label_bsetpoint;
         private System.Windows.Forms.Label label_breadout;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label_v1;
+        private System.Windows.Forms.Label label_v2;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton radioButton_steady;
         private System.Windows.Forms.RadioButton radioButton_list;
@@ -667,29 +615,25 @@
         private System.Windows.Forms.TextBox textBox_b_start;
         private System.Windows.Forms.CheckBox checkBox_path_to_zero;
         private System.Windows.Forms.CheckBox checkBox_reverse;
-        private System.Windows.Forms.Button button_stop_fromto;
-        private System.Windows.Forms.Button button_start_fromto;
         private System.Windows.Forms.Panel panel_list;
         private System.Windows.Forms.Button button_edit_blist;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox textBox_bset_delay_list;
-        private System.Windows.Forms.Button button_stop_list;
-        private System.Windows.Forms.Button button_start_list;
         private System.Windows.Forms.Panel panel_steady;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button_stop;
+        private System.Windows.Forms.Button button_start;
         private System.Windows.Forms.TextBox textBox_b_level;
         private System.Windows.Forms.RadioButton radioButton5;
         private System.Windows.Forms.RadioButton radioButton4;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label_outer_value;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox textBox_steady_delay;
         private System.Windows.Forms.TextBox textBox_outer_value;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_refresh;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label_increment;
         private System.Windows.Forms.Button button_settings;
@@ -698,7 +642,7 @@
         private System.Windows.Forms.Button button_plot;
         private System.Windows.Forms.TextBox textBox_filename;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Button button_openfile;
-        private System.Windows.Forms.Button button_showfolder;
+        private System.Windows.Forms.Label label_status;
+        private System.Windows.Forms.Label label_pol;
     }
 }

@@ -13,6 +13,7 @@ using KTL_Magnet2.Measurments;
 using KTL_Magnet2.BModes;
 using NCalc;
 using System.Data;
+using System.Reflection;
 
 namespace KTL_Magnet2
 {
@@ -70,7 +71,7 @@ namespace KTL_Magnet2
             set { readoutGains = value; Gains = ParseGXY(readoutGains); } 
         }
 
-        private List<(int x, int y)> Gains;
+        private List<(int ch, int g)> Gains;
 
         private static CancellationTokenSource cts;
 
@@ -101,6 +102,10 @@ namespace KTL_Magnet2
 
         private static StreamWriter writer = null;
 
+        private List<(int ch, int g)> ReadoutChanels = new List<(int, int)>();
+
+        public static DisplayDTO dto = new DisplayDTO();
+
         public static void Init(bool debugMode = false)
         {
             if (_instance is null)
@@ -118,11 +123,29 @@ namespace KTL_Magnet2
             }
         }
 
+        private void InitReadout()
+        {
+            ReadoutChanels = new List<(int, int)>();
+
+            for (int ch = 0; ch < adController.AvaiableChannels; ch++)
+            { 
+                if (ReadoutFormula.Contains($"V{ch}"))
+                {
+                    int gain = 1;
+                    if (Gains.Any((x) => x.ch == ch))
+                        gain = Gains.FirstOrDefault((x)=>x.ch == ch).g;
+                    ReadoutChanels.Add((ch, gain));
+                }
+            }
+        }
+
         private void _init()
         {
 
             adController.Init();
             InitSettings();
+            if (String.IsNullOrEmpty(ReadoutFormula)) return;
+
         }
 
         private void InitSettings()
@@ -173,8 +196,6 @@ namespace KTL_Magnet2
             return filename;
         }
 
-
-
         public static void OnClosing()
         {
             if (experimentalPlanChanged && Experiments?.Count > 0)
@@ -223,7 +244,7 @@ namespace KTL_Magnet2
             if (plan.PathToZero)
             {
                 int sign = Math.Sign(plan.BFrom);
-                while (Math.Abs(B_current - plan.BFrom) < eps)
+                while (Math.Abs(B_current - plan.BFrom) > eps)
                 {
                     double targetB = B_current + plan.BStep * sign;
                     if (sign * (targetB - plan.BFrom) > eps)
@@ -240,7 +261,7 @@ namespace KTL_Magnet2
             PerformExperiments();
             if (ct.IsCancellationRequested) return;
 
-            while (Math.Abs(B_current - plan.BTo) < eps)
+            while (Math.Abs(B_current - plan.BTo) > eps)
             {
                 int sign = Math.Sign(plan.BTo - plan.BFrom);
                 double targetB = B_current + plan.BStep * sign;
@@ -255,7 +276,7 @@ namespace KTL_Magnet2
             if (plan.Reverse)
             { 
                 int sign = Math.Sign(plan.BFrom - plan.BTo);
-                while (Math.Abs(B_current - plan.BFrom) < eps)
+                while (Math.Abs(B_current - plan.BFrom) > eps)
                 {
                     double targetB = B_current + plan.BStep * sign;
                     if (sign * (targetB - plan.BFrom) > eps)
@@ -341,6 +362,7 @@ namespace KTL_Magnet2
             foreach (var e in _experiments)
                 e.Init();
 
+            InitReadout();
             string headerLine = String.Empty;
             for (int i = 0; i < table.Columns.Count; i++)
             {
@@ -358,7 +380,9 @@ namespace KTL_Magnet2
 
 
         private void UpdateExperimentProgess(int current, int total)
-        { }
+        {
+            dto.displayString = $"Выполенение эксперимента, {current}/{total}";
+        }
 
         public static void Run(IBMode bMode)
         {
@@ -387,7 +411,7 @@ namespace KTL_Magnet2
             }
             finally
             {
-                writer.Dispose();
+                writer?.Dispose();
                 _instance.SetB(0);
                 running = false;
                 enableStartButton();
@@ -395,12 +419,47 @@ namespace KTL_Magnet2
             }
         }
 
-
+        public static void Stop()
+        {
+            cts?.Cancel();
+            disableStopButton();
+        
+        }
 
         private void UpdateReadout(bool checkSetpointB = false)
-        { 
-            
-        
+        {
+            var expression = new Expression(ReadoutFormula);
+            expression.EvaluateFunction += (string name, FunctionArgs args) =>
+            {
+                // 3. Проверяем, та ли это функция
+                if (name == "table")
+                {
+                    // Вычисляем первый и второй аргументы
+                    // args.Parameters[0] - это первый параметр (3)
+                    double x = (double)args.Parameters[0].Evaluate();
+
+                    // Присваиваем результат (9)
+                    args.Result = ro.GetY(x);
+                }
+            };
+
+
+                try
+                {
+                    foreach (var rc in ReadoutChanels)
+                    {
+                        expression.Parameters.Add($"V{rc.ch}", adController.GetVoltage(rc.ch, rc.g));
+                    }
+                    B_readout = (double)expression.Evaluate();
+                }
+                catch
+                {
+                    B_readout = 0;
+                }
+
+            if (Math.Abs(B_current - B_readout) > maxBMismatch && checkSetpointB && bMismatchStop)
+                throw new Exception("Индукция поля отличается от требуемой!");
+            dto.bReadout = B_readout;
         }
 
         private (double,double) GetVoltage(double b)
@@ -421,7 +480,7 @@ namespace KTL_Magnet2
 
         private void SetB(double b)
         {
-            while (Math.Abs(B_current - b) < eps)
+            while (Math.Abs(B_current - b) > eps)
             {
                 bool b_raising = b > B_current;
                 double b_step = b_raising ? b_max_step : -b_max_step;
@@ -442,6 +501,11 @@ namespace KTL_Magnet2
                 (v1, v2) = GetVoltage(B_target);
                 int b_delay = (int)Math.Round(((B_target - B_current) / b_slewrate) * 1000);
                 GoToV(v1, v2, b_delay);
+
+                dto.bSetpoint = B_current;
+                dto.v1 = v1;
+                dto.v2 = v2;
+
                 B_current = B_target;
                 UpdateReadout(true);
             }
@@ -487,6 +551,8 @@ namespace KTL_Magnet2
                 adController.SetVoltage(v2_next, 1);
                 V1_current = v1_next;
                 V2_current = v2_next;
+                dto.v1 = v1_next;
+                dto.v2 = v2_next;
                 Thread.Sleep(delay);
                 externalDelay -= delay;
                 UpdateReadout();
@@ -497,21 +563,23 @@ namespace KTL_Magnet2
         private void SetSignPlus()
         {
             adController.SetDigitalOutput(1);
+            dto.Sign = 1;
         }
 
         private void SetSignMinus()
         {
             adController.SetDigitalOutput(3);
+            dto.Sign = -1;
         }
 
-        public static List<(int x, int y)> ParseGXY(string input)
+        public static List<(int ch, int g)> ParseGXY(string input)
         {
-            var result = new List<(int x, int y)>();
+            var result = new List<(int ch, int g)>();
 
             // Регулярное выражение: g(число)=(число)
             // \b - граница слова, чтобы не захватывать part of word
-            // (\d+) - захватывает число для x
-            // (\d+) - захватывает число для y
+            // (\d+) - захватывает число для ch
+            // (\d+) - захватывает число для g
             string pattern = @"\bg(\d+)=(\d+)\b";
 
             MatchCollection matches = Regex.Matches(input, pattern);
@@ -520,16 +588,16 @@ namespace KTL_Magnet2
             {
                 if (match.Success && match.Groups.Count == 3)
                 {
-                    int x = int.Parse(match.Groups[1].Value);
-                    int y = int.Parse(match.Groups[2].Value);
-                    result.Add((x, y));
+                    int ch = int.Parse(match.Groups[1].Value);
+                    int g = int.Parse(match.Groups[2].Value);
+                    result.Add((ch, g));
                 }
             }
 
             return result;
         }
 
-        public static string GenerateValidFileName(string fileName, string directoryPath = "/data")
+        public static string GenerateValidFileName(string fileName, string directoryPath = "\\data")
         {
             // 1. Удаляем пробелы в начале и конце
             fileName = fileName?.Trim() ?? "";
@@ -547,11 +615,20 @@ namespace KTL_Magnet2
             }
 
             // 3. Формируем полный путь и проверяем существование
-            string fullPath = Path.Combine(directoryPath, fileName + ".txt");
+            string appDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string dataDirectory = Path.Combine(appDirectory, "data");
+
+            // 2. Создаём директорию data, если её нет
+            if (!Directory.Exists(dataDirectory))
+            {
+                Directory.CreateDirectory(dataDirectory);
+            }
+
+            string fullPath = Path.Combine(dataDirectory, fileName + ".txt");
 
             if (!File.Exists(fullPath))
             {
-                return fileName; // Возвращаем оригинальное имя, если файл не существует
+                return fileName;
             }
 
             // 4. Если файл существует, добавляем индекс
@@ -570,7 +647,7 @@ namespace KTL_Magnet2
             do
             {
                 newFileName = $"{baseName}_{index}";
-                fullPath = Path.Combine(directoryPath, newFileName + ".txt");
+                 fullPath = Path.Combine(dataDirectory, newFileName + ".txt");
                 index++;
             }
             while (File.Exists(fullPath));

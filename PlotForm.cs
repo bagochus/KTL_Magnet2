@@ -43,27 +43,26 @@ namespace KTL_Magnet2
         private readonly object _lockObject = new object();
 
 
-        private async Task<List<double>> RequestData(string name)
+        private  List<double> RequestData(string name)
         {
 
             if (!MagnetController.table.Columns.Contains(name))
                 return null;
             List<double> result = new List<double>();
-            await Task.Run(() =>
-            {
-                lock (MagnetController.table)
-                {
-                    for (int i = 0; i < MagnetController.table.Rows.Count; i++)
-                    {
-                        var value = MagnetController.table.Rows[i][name];
 
-                        if (value != DBNull.Value)
-                        {
-                            result.Add(Convert.ToDouble(value));
-                        }
+            lock (MagnetController.table)
+            {
+                for (int i = 0; i < MagnetController.table.Rows.Count; i++)
+                {
+                    var value = MagnetController.table.Rows[i][name];
+
+                    if (value != DBNull.Value)
+                    {
+                        result.Add(Convert.ToDouble(value));
                     }
                 }
-            });
+            }
+
             return result;
         }
 
@@ -98,9 +97,6 @@ namespace KTL_Magnet2
             InitializeComponent();
             MagnetController.DataUpdated += this.ListUpdated;
 
-
-            //checkBox_autoupdate.DataBindings.Add(new Binding("Checked", this, "AutoUpdate"));
-
             for (int i = 0; i < MagnetController.table.Columns.Count; i++)
             {
                 ValueNames.Add(MagnetController.table.Columns[i].ColumnName);
@@ -113,19 +109,22 @@ namespace KTL_Magnet2
         private async void ListUpdated(object sender, EventArgs e)
         {
             if (x_name == "" || y_name == "") return;
-            lock (_lockObject) 
+            await UpdateData();
+            this.Invoke(new Action(() =>
             {
-                await UpdateData();
-            }
+                formsPlot1.Plot.Clear();
+                formsPlot1.Plot.Add.Scatter(x_values, y_values);
+                formsPlot1.Refresh();
+            }));
         }
 
-        private async void Replot()
+        private void Replot()
         {
             if (x_name == "" || y_name == "") return;
             try
             {
-                x_values = await RequestData(x_name);
-                y_values = await RequestData(y_name);
+                x_values = RequestData(x_name);
+                y_values = RequestData(y_name);
                 formsPlot1.Plot.Clear();
                 formsPlot1.Plot.Add.Scatter(x_values, y_values);
                 formsPlot1.Refresh();
@@ -139,13 +138,16 @@ namespace KTL_Magnet2
             //double[] dataY = { 1, 4, 9, 16, 25 };
             x_name = comboBox_xname.Text;
             y_name = comboBox_yname.Text;
+            if (x_name == "" || y_name == "") return;
             Replot();
+            MagnetController.DataUpdated += ListUpdated;
+            button_Plot.Enabled = false;
         }
 
 
         private void PlotForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            //MagnetController.DataUpdated -= 
+            MagnetController.DataUpdated -= ListUpdated;
         }
 
         private void PlotForm_Resize(object sender, EventArgs e)
