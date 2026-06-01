@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using KTL_Magnet2.BModes;
 using KTL_Magnet2.DialogForms;
+using KTL_Magnet2.Measurments;
 
 namespace KTL_Magnet2
 {
@@ -22,6 +23,12 @@ namespace KTL_Magnet2
         private enum BMode : int {FromTo = 0, List = 1, Steady = 2 }
 
         BMode mode = (BMode)Settings.GetValue<int>("mode", 0);
+
+        private string externalVariableName;
+
+        private double increment;
+
+
 
         public NewMainForm()
         {
@@ -48,6 +55,42 @@ namespace KTL_Magnet2
             FillControls();
 
             MagnetController.dto.dataChanged += ((o, e) => UpdateDisplay(o as DisplayDTO));
+
+            MagnetController.disableStartButton = () => 
+            {
+                this.Invoke(new Action(() =>
+                {
+                    button_start.Enabled = false;
+                    contextMenuStrip1.Enabled = false;
+                }));
+            };
+
+            MagnetController.enableStartButton = () => 
+            {
+                this.Invoke(new Action(() =>
+                {
+                    button_start.Enabled = true;
+                    contextMenuStrip1.Enabled = true;
+                }));
+            };
+
+
+            MagnetController.enableStopButton = () => 
+            {
+                this.Invoke(new Action(() =>
+                {
+                    button_stop.Enabled = true;
+                }));
+            };
+
+            MagnetController.disableStopButton = () =>
+            {
+                this.Invoke(new Action(() =>
+                {
+                    button_stop.Enabled = false;
+                }));
+            };
+
         }
 
         public void UpdateDisplay(DisplayDTO ddto)
@@ -60,6 +103,7 @@ namespace KTL_Magnet2
                 label_v2.Text = $"U2 = {ddto.v2.ToString("0.00")}V(контроль тока)";
                 string pol = ddto.Sign < 0 ? "-" : "+";
                 label_pol.Text = "Полярность:" + pol;
+                label_status.Text = ddto.displayString;
             }));
         }
 
@@ -162,15 +206,50 @@ namespace KTL_Magnet2
             DataGridView dataGridView = new DataGridView();
             dataGridView.DataSource = MagnetController.table;
             dataGridView.ReadOnly = true;
-            form.Controls.Add(dataGridView);    
+            form.Controls.Add(dataGridView);
             dataGridView.Dock = DockStyle.Fill;
             form.Width = 700;
             form.Height = 400;
+
+            EventHandler refreshTable = new EventHandler((o, ea) =>
+            {
+                dataGridView.Invoke(new Action(() => {dataGridView.Invalidate(); }));
+            });
+
+            MagnetController.DataUpdated += refreshTable;
+
+            //fuck my life
+            form.FormClosed += (o, eaa) => 
+            {
+                MagnetController.DataUpdated -= refreshTable;
+            };
+            
+
+            dataGridView.CellFormatting += (sender, e) =>
+            {
+            // Проверяем, что это не заголовок и значение не null
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && e.Value != null)
+            {
+                // Проверяем, что значение числовое
+                if (e.Value is double || e.Value is decimal || e.Value is float)
+                {
+                    double value = Convert.ToDouble(e.Value);
+                    // Форматируем с 5 знаками после запятой
+                    e.Value = value.ToString("0.#####");
+                    e.FormattingApplied = true;
+                }
+            }
+            };
+
+
+
             form.Show();
 
 
 
         }
+
+
 
 
         private void HighlightControl(Control control)
@@ -307,6 +386,31 @@ namespace KTL_Magnet2
             if (mode == BMode.FromTo) await Task.Run(() => { StartFromTo(); });
             else if (mode == BMode.List) { }
             else if (mode == BMode.Steady) { }
+        }
+
+        private void button_stop_Click(object sender, EventArgs e)
+        {
+            MagnetController.Stop();
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            Func<string, bool> validate = (s) =>
+             {
+                 if (!ExperimentStep.IsValidVariableNameManual(s)) return false;
+                 if (MagnetController.Experiments.Any((x) => x.Name == s)) return false;
+                 return true;  
+            };
+            TextInput form = new TextInput(validate);
+            form.Text = "Введите имя для внешней переменной";
+            form.ShowDialog();
+            if (form.DialogResult == DialogResult.Yes)
+            {
+                label_outer_value.Text = form.InputText;
+                externalVariableName = form.InputText;
+            }
+
+
         }
     }
 }

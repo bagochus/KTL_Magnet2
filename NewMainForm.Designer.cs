@@ -30,6 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             this.panel_status = new System.Windows.Forms.Panel();
+            this.label_status = new System.Windows.Forms.Label();
+            this.label_pol = new System.Windows.Forms.Label();
             this.label_v2 = new System.Windows.Forms.Label();
             this.label_v1 = new System.Windows.Forms.Label();
             this.label_breadout = new System.Windows.Forms.Label();
@@ -56,7 +58,6 @@
             this.panel_steady = new System.Windows.Forms.Panel();
             this.label_increment = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
-            this.button_refresh = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.label_outer_value = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
@@ -68,6 +69,7 @@
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.textBox_b_level = new System.Windows.Forms.TextBox();
+            this.button_refresh = new System.Windows.Forms.Button();
             this.button_stop = new System.Windows.Forms.Button();
             this.button_start = new System.Windows.Forms.Button();
             this.button_settings = new System.Windows.Forms.Button();
@@ -76,8 +78,6 @@
             this.button_plot = new System.Windows.Forms.Button();
             this.textBox_filename = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
-            this.label_pol = new System.Windows.Forms.Label();
-            this.label_status = new System.Windows.Forms.Label();
             this.panel_status.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panel_fromto.SuspendLayout();
@@ -98,6 +98,27 @@
             this.panel_status.Name = "panel_status";
             this.panel_status.Size = new System.Drawing.Size(434, 281);
             this.panel_status.TabIndex = 0;
+            // 
+            // label_status
+            // 
+            this.label_status.AutoSize = true;
+            this.label_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_status.Location = new System.Drawing.Point(19, 233);
+            this.label_status.MaximumSize = new System.Drawing.Size(380, 0);
+            this.label_status.Name = "label_status";
+            this.label_status.Size = new System.Drawing.Size(43, 24);
+            this.label_status.TabIndex = 4;
+            this.label_status.Text = "___";
+            // 
+            // label_pol
+            // 
+            this.label_pol.AutoSize = true;
+            this.label_pol.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_pol.Location = new System.Drawing.Point(16, 199);
+            this.label_pol.Name = "label_pol";
+            this.label_pol.Size = new System.Drawing.Size(140, 24);
+            this.label_pol.TabIndex = 3;
+            this.label_pol.Text = "Полярность: ";
             // 
             // label_v2
             // 
@@ -357,15 +378,6 @@
             this.label12.TabIndex = 21;
             this.label12.Text = "Shift+Enter - инкремент / Ctrl+Enter - обновление величины";
             // 
-            // button_refresh
-            // 
-            this.button_refresh.Location = new System.Drawing.Point(362, 421);
-            this.button_refresh.Name = "button_refresh";
-            this.button_refresh.Size = new System.Drawing.Size(75, 50);
-            this.button_refresh.TabIndex = 6;
-            this.button_refresh.Text = "Обновить значения";
-            this.button_refresh.UseVisualStyleBackColor = true;
-            // 
             // label11
             // 
             this.label11.AutoSize = true;
@@ -414,7 +426,7 @@
             this.toolStripMenuItem1,
             this.toolStripMenuItem2});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 48);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 70);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // toolStripMenuItem1
@@ -422,6 +434,7 @@
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(189, 22);
             this.toolStripMenuItem1.Text = "Переименовать";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -458,6 +471,15 @@
             this.textBox_b_level.Size = new System.Drawing.Size(100, 20);
             this.textBox_b_level.TabIndex = 14;
             // 
+            // button_refresh
+            // 
+            this.button_refresh.Location = new System.Drawing.Point(362, 421);
+            this.button_refresh.Name = "button_refresh";
+            this.button_refresh.Size = new System.Drawing.Size(75, 50);
+            this.button_refresh.TabIndex = 6;
+            this.button_refresh.Text = "Обновить значения";
+            this.button_refresh.UseVisualStyleBackColor = true;
+            // 
             // button_stop
             // 
             this.button_stop.Location = new System.Drawing.Point(362, 365);
@@ -466,6 +488,7 @@
             this.button_stop.TabIndex = 13;
             this.button_stop.Text = "СТОП";
             this.button_stop.UseVisualStyleBackColor = true;
+            this.button_stop.Click += new System.EventHandler(this.button_stop_Click);
             // 
             // button_start
             // 
@@ -533,27 +556,6 @@
             this.label10.Size = new System.Drawing.Size(147, 13);
             this.label10.TabIndex = 23;
             this.label10.Text = "Имя файла для сохранения";
-            // 
-            // label_pol
-            // 
-            this.label_pol.AutoSize = true;
-            this.label_pol.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label_pol.Location = new System.Drawing.Point(16, 199);
-            this.label_pol.Name = "label_pol";
-            this.label_pol.Size = new System.Drawing.Size(140, 24);
-            this.label_pol.TabIndex = 3;
-            this.label_pol.Text = "Полярность: ";
-            // 
-            // label_status
-            // 
-            this.label_status.AutoSize = true;
-            this.label_status.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label_status.Location = new System.Drawing.Point(19, 233);
-            this.label_status.MaximumSize = new System.Drawing.Size(380, 0);
-            this.label_status.Name = "label_status";
-            this.label_status.Size = new System.Drawing.Size(43, 24);
-            this.label_status.TabIndex = 4;
-            this.label_status.Text = "___";
             // 
             // NewMainForm
             // 

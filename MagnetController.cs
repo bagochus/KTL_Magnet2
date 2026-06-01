@@ -106,6 +106,12 @@ namespace KTL_Magnet2
 
         public static DisplayDTO dto = new DisplayDTO();
 
+        private double bLevel;
+        private double extValue;
+        private bool NeedUpdate;
+
+
+
         public static void Init(bool debugMode = false)
         {
             if (_instance is null)
@@ -121,6 +127,13 @@ namespace KTL_Magnet2
             {
                 _instance._experiments = ExperimentsDB.GetExperiments(lastUsedProfileId, out _);
             }
+        }
+
+        public void UpdateLevel(double b, double extVal)
+        {
+            bLevel = b;
+            extValue = extVal;
+            NeedUpdate = true;
         }
 
         private void InitReadout()
@@ -253,6 +266,11 @@ namespace KTL_Magnet2
                     if (ct.IsCancellationRequested) return;
                 }
             }
+            else
+            {
+                dto.displayString = "Выход на начальную точку";
+
+            }
             //main 
 
             //first point
@@ -299,6 +317,22 @@ namespace KTL_Magnet2
                     if (ct.IsCancellationRequested) return;
                 }
             }
+        }
+
+        private void ExecuteExperiment(BModeSteady plan, CancellationToken ct)
+        {
+            table.Columns.Add(new DataColumn(plan.ExternalVarName, typeof(double)));
+
+            dto.displayString = "Выполенение эксперимента";
+            SetB(plan.BLevel);
+
+            if (plan.Continous)
+            { }
+
+
+
+
+
         }
 
         private void PerformExperiments()
@@ -386,6 +420,7 @@ namespace KTL_Magnet2
 
         public static void Run(IBMode bMode)
         {
+            string endStatus = "OK";
             if (running)   
             {
                 MessageBox.Show("Процесс еще продолжается");
@@ -403,19 +438,23 @@ namespace KTL_Magnet2
                 else if (bMode is BModeList) { }
                 else if (bMode is BModeSteady) { }
                 _instance.FinalizeExperiments();
-               
+
+                if (cts.IsCancellationRequested) endStatus = "Отмена";
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                endStatus = "Ошибка";
             }
             finally
             {
+                dto.displayString = "Завершение эксперимента";
                 writer?.Dispose();
                 _instance.SetB(0);
                 running = false;
                 enableStartButton();
                 enableStopButton();
+                dto.displayString = "Эксперимент завершен: "+ endStatus;
             }
         }
 
@@ -423,7 +462,7 @@ namespace KTL_Magnet2
         {
             cts?.Cancel();
             disableStopButton();
-        
+            if (!running) enableStartButton();
         }
 
         private void UpdateReadout(bool checkSetpointB = false)
@@ -523,13 +562,12 @@ namespace KTL_Magnet2
 
             bool v1_raising = v1 < V1_current;
             bool v2_raising = v2 < V2_current;
-            double v1_step, v2_step;
-            
-            if( additionalStepsNeeded) v1_step = v1_raising ? v1_max_step : v1-V1_current;
-            else v1_step = v1 - V1_current;
+            int v1_sign = Math.Sign(v1 - V1_current);
+            int v2_sign = Math.Sign(v2 - V2_current);
 
-            if (additionalStepsNeeded) v2_step = v2_raising ? v2_max_step : v2 - V2_current;
-            else v2_step = v2 - V2_current;
+            double v1_step = v1_sign * v1_max_step;
+            double v2_step = v2_sign * v2_max_step;    
+
 
             int v1_delay = (int)Math.Round((Math.Abs(v1_step) / v1_slewrate) * 1000);
             int v2_delay = (int)Math.Round((Math.Abs(v2_step) / v2_slewrate) * 1000);
@@ -540,12 +578,10 @@ namespace KTL_Magnet2
                 || Math.Abs(v2 - V2_current) > eps)
             {
                 double v1_next = V1_current + v1_step;
-                if ((v1_raising && v1_next > v1 - eps) || (!v1_raising && v1_next < v1 + eps))
-                    v1_next = v1;
+                if (v1_sign * (v1_next - v1) > eps) v1_next = v1;
 
                 double v2_next = V2_current + v2_step;
-                if ((v2_raising && v2_next > v2 - eps) || (!v2_raising && v2_next < v2 + eps))
-                    v2_next = v2;
+                if (v2_sign * (v2_next - v2) > eps) v2_next = v2;
 
                 adController.SetVoltage(v1_next, 0);
                 adController.SetVoltage(v2_next, 1);
