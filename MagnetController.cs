@@ -321,18 +321,29 @@ namespace KTL_Magnet2
 
         private void ExecuteExperiment(BModeSteady plan, CancellationToken ct)
         {
+            int recordCount = 0
+            NeedUpdate = true;
             table.Columns.Add(new DataColumn(plan.ExternalVarName, typeof(double)));
-
+            bLevel = plan.BLevel;
+            extValue = plan.ExternalVariable;
             dto.displayString = "Выполенение эксперимента";
             SetB(plan.BLevel);
+            PerformExperiments();
+            table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
+            recordCount++;
 
-            if (plan.Continous)
-            { }
+            if ((plan.Continous || NeedUpdate) && !cts.IsCancellationRequested)
+            {
+                if (bLevel != B_current)
+                {
+                    SetB(plan.BLevel);
+                }
+                Thread.Sleep(plan.Delay);
+                PerformExperiments();
+                table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
+                dto.displayString = $"{recordCount} записей сформировано";
 
-
-
-
-
+            }
         }
 
         private void PerformExperiments()

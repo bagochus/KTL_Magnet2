@@ -140,6 +140,22 @@ namespace KTL_Magnet2
                 MagnetController.Run(mode);
         }
 
+        private void StartSteady()
+        {
+            BModeSteady mode = new BModeSteady();
+            bool inputValid = true;
+            inputValid &= ParseBoxDouble(textBox_b_level, ref mode.BLevel);
+            inputValid &= ParseBoxDouble(textBox_outer_value, ref mode.ExternalVariable);
+            inputValid &= ParseBoxInt(textBox_steady_delay, ref mode.Delay);
+            mode.ExternalVarName = externalVariableName;
+            mode.Continous = radioButton_steady_cont.Checked;
+
+            if (inputValid)
+                MagnetController.Run(mode);
+
+        
+
+        }
 
 
         private void SetModeRadiobuttons()
@@ -409,8 +425,6 @@ namespace KTL_Magnet2
                 label_outer_value.Text = form.InputText;
                 externalVariableName = form.InputText;
             }
-
-
         }
     }
 }

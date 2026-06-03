@@ -8,14 +8,11 @@ namespace KTL_Magnet2.BModes
 {
     public class BModeSteady : IBMode
     {
-        public double BLevel {  get; set; }
-       
-        public double ExternalVariable { get; set; }
-
+        public double BLevel;
+        public double ExternalVariable;
         public string ExternalVarName;
-        public int Delay { get; set; }
-       
-        public bool Continous { get; set; }
+        public int Delay;
+        public bool Continous;
         
 
 

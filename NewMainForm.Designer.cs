@@ -66,8 +66,8 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.radioButton5 = new System.Windows.Forms.RadioButton();
-            this.radioButton4 = new System.Windows.Forms.RadioButton();
+            this.radioButton_steady_cont = new System.Windows.Forms.RadioButton();
+            this.radioButton_steady_uncont = new System.Windows.Forms.RadioButton();
             this.textBox_b_level = new System.Windows.Forms.TextBox();
             this.button_refresh = new System.Windows.Forms.Button();
             this.button_stop = new System.Windows.Forms.Button();
@@ -353,8 +353,8 @@
             this.panel_steady.Controls.Add(this.label9);
             this.panel_steady.Controls.Add(this.textBox_steady_delay);
             this.panel_steady.Controls.Add(this.textBox_outer_value);
-            this.panel_steady.Controls.Add(this.radioButton5);
-            this.panel_steady.Controls.Add(this.radioButton4);
+            this.panel_steady.Controls.Add(this.radioButton_steady_cont);
+            this.panel_steady.Controls.Add(this.radioButton_steady_uncont);
             this.panel_steady.Controls.Add(this.textBox_b_level);
             this.panel_steady.Location = new System.Drawing.Point(12, 309);
             this.panel_steady.Name = "panel_steady";
@@ -426,7 +426,7 @@
             this.toolStripMenuItem1,
             this.toolStripMenuItem2});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 48);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // toolStripMenuItem1
@@ -442,27 +442,27 @@
             this.toolStripMenuItem2.Size = new System.Drawing.Size(189, 22);
             this.toolStripMenuItem2.Text = "Добавить инкремент";
             // 
-            // radioButton5
+            // radioButton_steady_cont
             // 
-            this.radioButton5.AutoSize = true;
-            this.radioButton5.Checked = true;
-            this.radioButton5.Location = new System.Drawing.Point(20, 119);
-            this.radioButton5.Name = "radioButton5";
-            this.radioButton5.Size = new System.Drawing.Size(179, 17);
-            this.radioButton5.TabIndex = 16;
-            this.radioButton5.TabStop = true;
-            this.radioButton5.Text = "Вести измерения непрерывно";
-            this.radioButton5.UseVisualStyleBackColor = true;
+            this.radioButton_steady_cont.AutoSize = true;
+            this.radioButton_steady_cont.Checked = true;
+            this.radioButton_steady_cont.Location = new System.Drawing.Point(20, 119);
+            this.radioButton_steady_cont.Name = "radioButton_steady_cont";
+            this.radioButton_steady_cont.Size = new System.Drawing.Size(179, 17);
+            this.radioButton_steady_cont.TabIndex = 16;
+            this.radioButton_steady_cont.TabStop = true;
+            this.radioButton_steady_cont.Text = "Вести измерения непрерывно";
+            this.radioButton_steady_cont.UseVisualStyleBackColor = true;
             // 
-            // radioButton4
+            // radioButton_steady_uncont
             // 
-            this.radioButton4.AutoSize = true;
-            this.radioButton4.Location = new System.Drawing.Point(20, 142);
-            this.radioButton4.Name = "radioButton4";
-            this.radioButton4.Size = new System.Drawing.Size(223, 17);
-            this.radioButton4.TabIndex = 15;
-            this.radioButton4.Text = "Проводить измерения при обновлении";
-            this.radioButton4.UseVisualStyleBackColor = true;
+            this.radioButton_steady_uncont.AutoSize = true;
+            this.radioButton_steady_uncont.Location = new System.Drawing.Point(20, 142);
+            this.radioButton_steady_uncont.Name = "radioButton_steady_uncont";
+            this.radioButton_steady_uncont.Size = new System.Drawing.Size(223, 17);
+            this.radioButton_steady_uncont.TabIndex = 15;
+            this.radioButton_steady_uncont.Text = "Проводить измерения при обновлении";
+            this.radioButton_steady_uncont.UseVisualStyleBackColor = true;
             // 
             // textBox_b_level
             // 
@@ -625,8 +625,8 @@
         private System.Windows.Forms.Button button_stop;
         private System.Windows.Forms.Button button_start;
         private System.Windows.Forms.TextBox textBox_b_level;
-        private System.Windows.Forms.RadioButton radioButton5;
-        private System.Windows.Forms.RadioButton radioButton4;
+        private System.Windows.Forms.RadioButton radioButton_steady_cont;
+        private System.Windows.Forms.RadioButton radioButton_steady_uncont;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label_outer_value;
         private System.Windows.Forms.Label label9;
