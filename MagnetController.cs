@@ -109,7 +109,7 @@ namespace KTL_Magnet2
 
         private static double bLevel;
         private static double extValue;
-        private static bool NeedUpdate;
+        private static bool NeedUpdate = false;
 
 
 
@@ -338,7 +338,7 @@ namespace KTL_Magnet2
             extValue = plan.ExternalVariable;
             dto.displayString = "Выход на начальную точку";
             SetB(plan.BLevel);
-            PerformExperiments();
+            PerformExperiments(plan.ExternalVarName,extValue);
             table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
             recordCount++;
 
@@ -351,7 +351,7 @@ namespace KTL_Magnet2
                     else
                         UpdateReadout(true);
                     Thread.Sleep(plan.Delay);
-                    PerformExperiments();
+                    PerformExperiments(plan.ExternalVarName, extValue);
                     table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
                     dto.displayString = $"{++recordCount} записей сформировано";
                     NeedUpdate = false;
@@ -372,12 +372,14 @@ namespace KTL_Magnet2
         
         }
 
-        private void PerformExperiments()
+        private void PerformExperiments(string extVarName = null, double extVar = 0)
         {
             UpdateReadout();
             Dictionary<string, double> values = new Dictionary<string, double>();
             foreach (var e in _experiments)
                 values.Add(e.Name, default);
+            if (!string.IsNullOrEmpty(extVarName))
+                values.Add(extVarName, extVar);
 
             for (int i = 0; i < _experiments.Count; i++)
             {

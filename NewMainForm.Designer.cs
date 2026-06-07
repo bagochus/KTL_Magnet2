@@ -377,10 +377,12 @@
             // label_increment
             // 
             this.label_increment.AutoSize = true;
-            this.label_increment.Location = new System.Drawing.Point(240, 57);
+            this.label_increment.ContextMenuStrip = this.contextMenuStrip1;
+            this.label_increment.Location = new System.Drawing.Point(263, 63);
             this.label_increment.Name = "label_increment";
-            this.label_increment.Size = new System.Drawing.Size(0, 13);
+            this.label_increment.Size = new System.Drawing.Size(19, 13);
             this.label_increment.TabIndex = 22;
+            this.label_increment.Text = "+_";
             // 
             // label12
             // 
@@ -403,6 +405,7 @@
             // label_outer_value
             // 
             this.label_outer_value.AutoSize = true;
+            this.label_outer_value.ContextMenuStrip = this.contextMenuStrip1;
             this.label_outer_value.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.label_outer_value.Location = new System.Drawing.Point(29, 63);
             this.label_outer_value.Name = "label_outer_value";
@@ -422,7 +425,8 @@
             // 
             // textBox_steady_delay
             // 
-            this.textBox_steady_delay.Location = new System.Drawing.Point(157, 86);
+            this.textBox_steady_delay.ContextMenuStrip = this.contextMenuStrip1;
+            this.textBox_steady_delay.Location = new System.Drawing.Point(157, 60);
             this.textBox_steady_delay.Name = "textBox_steady_delay";
             this.textBox_steady_delay.Size = new System.Drawing.Size(100, 20);
             this.textBox_steady_delay.TabIndex = 17;
@@ -430,7 +434,7 @@
             // textBox_outer_value
             // 
             this.textBox_outer_value.ContextMenuStrip = this.contextMenuStrip1;
-            this.textBox_outer_value.Location = new System.Drawing.Point(157, 60);
+            this.textBox_outer_value.Location = new System.Drawing.Point(157, 86);
             this.textBox_outer_value.Name = "textBox_outer_value";
             this.textBox_outer_value.Size = new System.Drawing.Size(100, 20);
             this.textBox_outer_value.TabIndex = 5;

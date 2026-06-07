@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,12 +15,6 @@ using System.Xml.Serialization;
 
 namespace KTL_Magnet2
 {
-    public delegate List<double> RequestDataDelegate(string name);
-
-
-
-
-
 
     public partial class PlotForm : Form
     {
@@ -40,7 +35,8 @@ namespace KTL_Magnet2
         private String y_name = "";
         private List<double> x_values;
         private List<double> y_values;
-        private readonly object _lockObject = new object();
+        private bool dataUpdated = false;
+        private DataTable bindingTable;
 
 
         private  List<double> RequestData(string name)
@@ -66,9 +62,23 @@ namespace KTL_Magnet2
             return result;
         }
 
+        private void Plot_OnPaint(object sender, EventArgs args)
+        {
+            if (dataUpdated)
+            {
+                formsPlot1.Plot.Clear();
+                formsPlot1.Plot.Add.Scatter(x_values, y_values);
+                formsPlot1.Refresh();
+                dataUpdated = false;
+            }
+        }
 
         private async Task UpdateData()
         {
+            bindingTable = MagnetController.table;
+            if (bindingTable is null) return;
+
+
             if (!MagnetController.table.Columns.Contains(x_name) ||
                 !MagnetController.table.Columns.Contains(y_name))
                 return;
@@ -80,7 +90,7 @@ namespace KTL_Magnet2
                     for (int i = x_values.Count; i < MagnetController.table.Rows.Count; i++)
                     {
                         var x_value = MagnetController.table.Rows[i][x_name];
-                        var y_value = MagnetController.table.Rows[i][x_name];
+                        var y_value = MagnetController.table.Rows[i][y_name];
 
                         if (x_value != DBNull.Value && y_value != DBNull.Value)
                         {
@@ -104,18 +114,17 @@ namespace KTL_Magnet2
             
             comboBox_xname.Items.AddRange(ValueNames.ToArray());
             comboBox_yname.Items.AddRange(ValueNames.ToArray());
+            formsPlot1.Paint += Plot_OnPaint;
+
         }
 
         private async void ListUpdated(object sender, EventArgs e)
         {
             if (x_name == "" || y_name == "") return;
+            if (MagnetController.table != bindingTable) return;
             await UpdateData();
-            this.Invoke(new Action(() =>
-            {
-                formsPlot1.Plot.Clear();
-                formsPlot1.Plot.Add.Scatter(x_values, y_values);
-                formsPlot1.Refresh();
-            }));
+            dataUpdated = true;
+            formsPlot1?.Invoke(new Action(()=> { formsPlot1?.Invalidate(); }));
         }
 
         private void Replot()

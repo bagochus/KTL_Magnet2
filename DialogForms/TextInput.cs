@@ -17,11 +17,12 @@ namespace KTL_Magnet2.DialogForms
 
         Func<string, bool> _validate = (x) => { return true; };
 
-        public TextInput(Func<string,bool> validate)
+        public TextInput(Func<string,bool> validate,string defaultText = "")
         {
             InitializeComponent();
             DialogResult = DialogResult.No;
             _validate = validate;
+            textBox_input.Text = defaultText;
         }
 
         private void HighlightControl(Control control)

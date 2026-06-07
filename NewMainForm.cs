@@ -518,7 +518,7 @@ namespace KTL_Magnet2
                  if (MagnetController.Experiments.Any((x) => x.Name == s)) return false;
                  return true;  
             };
-            TextInput form = new TextInput(validate);
+            TextInput form = new TextInput(validate,"extVar");
             form.Text = "Введите имя для внешней переменной";
             form.ShowDialog();
             if (form.DialogResult == DialogResult.Yes)
@@ -539,7 +539,7 @@ namespace KTL_Magnet2
             {
                 return Double.TryParse(s,NumberStyles.Any ,frmt,out _);
             };
-            TextInput form = new TextInput(validate);
+            TextInput form = new TextInput(validate,"1");
             form.Text = "Введите инкремент переменной";
             form.ShowDialog();
             if (form.DialogResult == DialogResult.Yes)
