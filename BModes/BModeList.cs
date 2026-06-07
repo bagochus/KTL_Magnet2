@@ -9,9 +9,9 @@ namespace KTL_Magnet2.BModes
 {
     public class BModeList : IBMode
     {
-        public double[] values { get; set; } = new double[0];
+        public double[] values = new double[0];
 
-        public int Delay { get; set; }
+        public int Delay;
 
 
 

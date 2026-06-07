@@ -10,7 +10,7 @@ namespace KTL_Magnet2.BModes
     {
         public double BLevel;
         public double ExternalVariable;
-        public string ExternalVarName;
+        public string ExternalVarName = "external_value";
         public int Delay;
         public bool Continous;
         

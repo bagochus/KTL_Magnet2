@@ -2,18 +2,22 @@
 
 namespace KTL_Magnet2
 {
+
+    public class DisplayUpdateArgs : EventArgs
+    {
+        public string ParamName {  get; set; }  
+    }
+
+
     public class DisplayDTO
     {
         public double bSetpoint
         {
             get { return _bSetpoint; }
-            set {
-                if (value != _bSetpoint) 
-                {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
-                }
-                _bSetpoint = value; 
-
+            set
+            {
+                _bSetpoint = value;
+                DataChanged("bSetpoint");
             }
         }
 
@@ -22,12 +26,8 @@ namespace KTL_Magnet2
             get { return _bReadout; }
             set
             {
-                if (value != _bReadout)
-                {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
-                }
                 _bReadout = value;
-
+                DataChanged("bReadout");
             }
         }
         public double v1
@@ -37,10 +37,9 @@ namespace KTL_Magnet2
             {
                 if (value != _v1)
                 {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
+                    _v1 = value;
+                    DataChanged("v1");
                 }
-                _v1 = value;
-
             }
         }
 
@@ -49,12 +48,8 @@ namespace KTL_Magnet2
             get { return _v2; }
             set
             {
-                if (value != _v2)
-                {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
-                }
                 _v2 = value;
-
+                DataChanged("v2");
             }
         }
 
@@ -63,12 +58,8 @@ namespace KTL_Magnet2
             get { return _Sign; }
             set
             {
-                if (value != _Sign)
-                {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
-                }
                 _Sign = value;
-
+                DataChanged("Sign");
             }
         }
 
@@ -77,12 +68,8 @@ namespace KTL_Magnet2
             get { return _fieldState; }
             set
             {
-                if (value != _fieldState)
-                {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
-                }
                 _fieldState = value;
-
+                DataChanged("fieldState");
             }
         }
 
@@ -91,14 +78,13 @@ namespace KTL_Magnet2
             get { return _displayString ?? String.Empty; }
             set
             {
-                if (value != _displayString)
-                {
-                    dataChanged?.Invoke(this, EventArgs.Empty);
-                }
                 _displayString = value ?? String.Empty;
-
+                DataChanged("displayString");
             }
         }
+
+
+
 
 
         private double _bSetpoint, _bReadout, _v1, _v2;
@@ -106,7 +92,13 @@ namespace KTL_Magnet2
         private int _Sign;
         private string _displayString;
 
-        public EventHandler dataChanged;
-    
+        public EventHandler<DisplayUpdateArgs> dataChanged;
+
+        private void DataChanged(string name)
+        {
+            DisplayUpdateArgs args = new DisplayUpdateArgs { ParamName = name };
+            dataChanged?.Invoke(this, args);
+        }
+
     }
 }

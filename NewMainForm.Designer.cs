@@ -36,7 +36,7 @@
             this.label_v1 = new System.Windows.Forms.Label();
             this.label_breadout = new System.Windows.Forms.Label();
             this.label_bsetpoint = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox_bmode = new System.Windows.Forms.GroupBox();
             this.radioButton_steady = new System.Windows.Forms.RadioButton();
             this.radioButton_list = new System.Windows.Forms.RadioButton();
             this.radioButton_fromto = new System.Windows.Forms.RadioButton();
@@ -52,6 +52,7 @@
             this.textBox_b_end = new System.Windows.Forms.TextBox();
             this.textBox_b_start = new System.Windows.Forms.TextBox();
             this.panel_list = new System.Windows.Forms.Panel();
+            this.label_bListCount = new System.Windows.Forms.Label();
             this.button_edit_blist = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox_bset_delay_list = new System.Windows.Forms.TextBox();
@@ -78,8 +79,10 @@
             this.button_plot = new System.Windows.Forms.Button();
             this.textBox_filename = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
+            this.button_openfile = new System.Windows.Forms.Button();
+            this.button_openfolder = new System.Windows.Forms.Button();
             this.panel_status.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.groupBox_bmode.SuspendLayout();
             this.panel_fromto.SuspendLayout();
             this.panel_list.SuspendLayout();
             this.panel_steady.SuspendLayout();
@@ -159,19 +162,18 @@
             this.label_bsetpoint.Size = new System.Drawing.Size(221, 39);
             this.label_bsetpoint.TabIndex = 0;
             this.label_bsetpoint.Text = "B уст. =   Тл";
-            this.label_bsetpoint.Click += new System.EventHandler(this.label1_Click);
             // 
-            // groupBox1
+            // groupBox_bmode
             // 
-            this.groupBox1.Controls.Add(this.radioButton_steady);
-            this.groupBox1.Controls.Add(this.radioButton_list);
-            this.groupBox1.Controls.Add(this.radioButton_fromto);
-            this.groupBox1.Location = new System.Drawing.Point(456, 12);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(197, 129);
-            this.groupBox1.TabIndex = 1;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Сценарий изменения В";
+            this.groupBox_bmode.Controls.Add(this.radioButton_steady);
+            this.groupBox_bmode.Controls.Add(this.radioButton_list);
+            this.groupBox_bmode.Controls.Add(this.radioButton_fromto);
+            this.groupBox_bmode.Location = new System.Drawing.Point(456, 12);
+            this.groupBox_bmode.Name = "groupBox_bmode";
+            this.groupBox_bmode.Size = new System.Drawing.Size(197, 129);
+            this.groupBox_bmode.TabIndex = 1;
+            this.groupBox_bmode.TabStop = false;
+            this.groupBox_bmode.Text = "Сценарий изменения В";
             // 
             // radioButton_steady
             // 
@@ -311,6 +313,7 @@
             // 
             // panel_list
             // 
+            this.panel_list.Controls.Add(this.label_bListCount);
             this.panel_list.Controls.Add(this.button_edit_blist);
             this.panel_list.Controls.Add(this.label8);
             this.panel_list.Controls.Add(this.textBox_bset_delay_list);
@@ -319,14 +322,24 @@
             this.panel_list.Size = new System.Drawing.Size(333, 195);
             this.panel_list.TabIndex = 3;
             // 
+            // label_bListCount
+            // 
+            this.label_bListCount.AutoSize = true;
+            this.label_bListCount.Location = new System.Drawing.Point(22, 92);
+            this.label_bListCount.Name = "label_bListCount";
+            this.label_bListCount.Size = new System.Drawing.Size(69, 13);
+            this.label_bListCount.TabIndex = 17;
+            this.label_bListCount.Text = "Список пуст";
+            // 
             // button_edit_blist
             // 
             this.button_edit_blist.Location = new System.Drawing.Point(20, 26);
             this.button_edit_blist.Name = "button_edit_blist";
             this.button_edit_blist.Size = new System.Drawing.Size(281, 21);
             this.button_edit_blist.TabIndex = 16;
-            this.button_edit_blist.Text = "Редактировать список значений поля";
+            this.button_edit_blist.Text = "Редактировать список значений индукции";
             this.button_edit_blist.UseVisualStyleBackColor = true;
+            this.button_edit_blist.Click += new System.EventHandler(this.button_edit_blist_Click);
             // 
             // label8
             // 
@@ -381,7 +394,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(70, 83);
+            this.label11.Location = new System.Drawing.Point(73, 89);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(58, 13);
             this.label11.TabIndex = 20;
@@ -390,16 +403,18 @@
             // label_outer_value
             // 
             this.label_outer_value.AutoSize = true;
-            this.label_outer_value.Location = new System.Drawing.Point(26, 57);
+            this.label_outer_value.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label_outer_value.Location = new System.Drawing.Point(29, 63);
             this.label_outer_value.Name = "label_outer_value";
             this.label_outer_value.Size = new System.Drawing.Size(104, 13);
             this.label_outer_value.TabIndex = 19;
             this.label_outer_value.Text = "Внешний параметр";
+            this.label_outer_value.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(20, 31);
+            this.label9.Location = new System.Drawing.Point(29, 37);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(102, 13);
             this.label9.TabIndex = 18;
@@ -407,7 +422,7 @@
             // 
             // textBox_steady_delay
             // 
-            this.textBox_steady_delay.Location = new System.Drawing.Point(134, 80);
+            this.textBox_steady_delay.Location = new System.Drawing.Point(157, 86);
             this.textBox_steady_delay.Name = "textBox_steady_delay";
             this.textBox_steady_delay.Size = new System.Drawing.Size(100, 20);
             this.textBox_steady_delay.TabIndex = 17;
@@ -415,7 +430,7 @@
             // textBox_outer_value
             // 
             this.textBox_outer_value.ContextMenuStrip = this.contextMenuStrip1;
-            this.textBox_outer_value.Location = new System.Drawing.Point(134, 54);
+            this.textBox_outer_value.Location = new System.Drawing.Point(157, 60);
             this.textBox_outer_value.Name = "textBox_outer_value";
             this.textBox_outer_value.Size = new System.Drawing.Size(100, 20);
             this.textBox_outer_value.TabIndex = 5;
@@ -427,7 +442,6 @@
             this.toolStripMenuItem2});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(190, 48);
-            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // toolStripMenuItem1
             // 
@@ -441,6 +455,7 @@
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
             this.toolStripMenuItem2.Size = new System.Drawing.Size(189, 22);
             this.toolStripMenuItem2.Text = "Добавить инкремент";
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // radioButton_steady_cont
             // 
@@ -466,7 +481,7 @@
             // 
             // textBox_b_level
             // 
-            this.textBox_b_level.Location = new System.Drawing.Point(134, 28);
+            this.textBox_b_level.Location = new System.Drawing.Point(157, 34);
             this.textBox_b_level.Name = "textBox_b_level";
             this.textBox_b_level.Size = new System.Drawing.Size(100, 20);
             this.textBox_b_level.TabIndex = 14;
@@ -479,6 +494,7 @@
             this.button_refresh.TabIndex = 6;
             this.button_refresh.Text = "Обновить значения";
             this.button_refresh.UseVisualStyleBackColor = true;
+            this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
             // 
             // button_stop
             // 
@@ -557,11 +573,33 @@
             this.label10.TabIndex = 23;
             this.label10.Text = "Имя файла для сохранения";
             // 
+            // button_openfile
+            // 
+            this.button_openfile.Location = new System.Drawing.Point(455, 382);
+            this.button_openfile.Name = "button_openfile";
+            this.button_openfile.Size = new System.Drawing.Size(91, 23);
+            this.button_openfile.TabIndex = 23;
+            this.button_openfile.Text = "Открыть файл";
+            this.button_openfile.UseVisualStyleBackColor = true;
+            this.button_openfile.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button_openfolder
+            // 
+            this.button_openfolder.Location = new System.Drawing.Point(563, 382);
+            this.button_openfolder.Name = "button_openfolder";
+            this.button_openfolder.Size = new System.Drawing.Size(95, 23);
+            this.button_openfolder.TabIndex = 24;
+            this.button_openfolder.Text = "Открыть папку";
+            this.button_openfolder.UseVisualStyleBackColor = true;
+            this.button_openfolder.Click += new System.EventHandler(this.button_openfolder_Click);
+            // 
             // NewMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1031, 529);
+            this.Controls.Add(this.button_openfolder);
+            this.Controls.Add(this.button_openfile);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.button_refresh);
             this.Controls.Add(this.textBox_filename);
@@ -572,7 +610,7 @@
             this.Controls.Add(this.panel_steady);
             this.Controls.Add(this.panel_list);
             this.Controls.Add(this.panel_fromto);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.groupBox_bmode);
             this.Controls.Add(this.button_stop);
             this.Controls.Add(this.panel_status);
             this.Controls.Add(this.button_start);
@@ -581,8 +619,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.NewMainForm_FormClosing);
             this.panel_status.ResumeLayout(false);
             this.panel_status.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.groupBox_bmode.ResumeLayout(false);
+            this.groupBox_bmode.PerformLayout();
             this.panel_fromto.ResumeLayout(false);
             this.panel_fromto.PerformLayout();
             this.panel_list.ResumeLayout(false);
@@ -602,7 +640,7 @@
         private System.Windows.Forms.Label label_breadout;
         private System.Windows.Forms.Label label_v1;
         private System.Windows.Forms.Label label_v2;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox_bmode;
         private System.Windows.Forms.RadioButton radioButton_steady;
         private System.Windows.Forms.RadioButton radioButton_list;
         private System.Windows.Forms.RadioButton radioButton_fromto;
@@ -646,5 +684,8 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label_status;
         private System.Windows.Forms.Label label_pol;
+        private System.Windows.Forms.Label label_bListCount;
+        private System.Windows.Forms.Button button_openfile;
+        private System.Windows.Forms.Button button_openfolder;
     }
 }

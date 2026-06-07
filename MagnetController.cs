@@ -34,6 +34,7 @@ namespace KTL_Magnet2
         }
 
         private static bool running = false;
+        private static bool initalized = false;
 
         public static int lastUsedProfileId = -1;
         public static bool experimentalPlanChanged = false;
@@ -106,30 +107,39 @@ namespace KTL_Magnet2
 
         public static DisplayDTO dto = new DisplayDTO();
 
-        private double bLevel;
-        private double extValue;
-        private bool NeedUpdate;
+        private static double bLevel;
+        private static double extValue;
+        private static bool NeedUpdate;
 
 
 
         public static void Init(bool debugMode = false)
         {
-            if (_instance is null)
-            { 
-                _instance = new MagnetController();
-                if (debugMode) _instance.adController = new AD_Controller_dummy();
-                else _instance.adController = new AD_controller();
-                _instance._init();
-            }
-
-            lastUsedProfileId = Settings.GetValue<int>("lastUsedProfileId", -1);
-            if (lastUsedProfileId > 0) 
+            try 
             {
-                _instance._experiments = ExperimentsDB.GetExperiments(lastUsedProfileId, out _);
+                if (_instance is null)
+                {
+                    _instance = new MagnetController();
+                    if (debugMode) _instance.adController = new AD_Controller_dummy();
+                    else _instance.adController = new AD_controller();
+                    _instance._init();
+                }
+
+                lastUsedProfileId = Settings.GetValue<int>("lastUsedProfileId", -1);
+                if (lastUsedProfileId > 0)
+                {
+                    _instance._experiments = ExperimentsDB.GetExperiments(lastUsedProfileId, out _);
+                }
+                initalized = true;
             }
+            catch (Exception ex) 
+            {
+                MessageBox.Show(ex.Message);
+            }
+           
         }
 
-        public void UpdateLevel(double b, double extVal)
+        public static void UpdateLevel(double b, double extVal)
         {
             bLevel = b;
             extValue = extVal;
@@ -250,7 +260,7 @@ namespace KTL_Magnet2
                 SetB(targetB);
                 Thread.Sleep(plan.Delay);
                 PerformExperiments();
-                UpdateExperimentProgess(currentStep, expectedSteps);
+                UpdateExperimentProgess(++currentStep, expectedSteps);
             };
 
 
@@ -321,29 +331,45 @@ namespace KTL_Magnet2
 
         private void ExecuteExperiment(BModeSteady plan, CancellationToken ct)
         {
-            int recordCount = 0
+            int recordCount = 0;
             NeedUpdate = true;
             table.Columns.Add(new DataColumn(plan.ExternalVarName, typeof(double)));
             bLevel = plan.BLevel;
             extValue = plan.ExternalVariable;
-            dto.displayString = "Выполенение эксперимента";
+            dto.displayString = "Выход на начальную точку";
             SetB(plan.BLevel);
             PerformExperiments();
             table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
             recordCount++;
 
-            if ((plan.Continous || NeedUpdate) && !cts.IsCancellationRequested)
+            while ( !cts.IsCancellationRequested)
             {
-                if (bLevel != B_current)
+                if (plan.Continous || NeedUpdate)
                 {
-                    SetB(plan.BLevel);
+                    if (bLevel != B_current)
+                        SetB(bLevel);
+                    else
+                        UpdateReadout(true);
+                    Thread.Sleep(plan.Delay);
+                    PerformExperiments();
+                    table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
+                    dto.displayString = $"{++recordCount} записей сформировано";
+                    NeedUpdate = false;
                 }
-                Thread.Sleep(plan.Delay);
-                PerformExperiments();
-                table.Rows[table.Rows.Count - 1][plan.ExternalVarName] = extValue;
-                dto.displayString = $"{recordCount} записей сформировано";
 
             }
+        }
+
+        private void ExecuteExperiment(BModeList plan, CancellationToken ct)
+        {
+            for (int i = 0; i < plan.values.Count(); i++) 
+            {
+                if (ct.IsCancellationRequested) return;
+                SetB(plan.values[i]);
+                PerformExperiments();
+                dto.displayString = $"Выполнение эксперимента, шаг {i}/{plan.values.Count()}";
+            }
+        
         }
 
         private void PerformExperiments()
@@ -431,6 +457,13 @@ namespace KTL_Magnet2
 
         public static void Run(IBMode bMode)
         {
+            if (!initalized)
+            {
+                MessageBox.Show("Не удалось установить связь с блоком ЦАП/АЦП. " +
+                    "Проверьте подключение и перезапустите программу");
+                return;
+            }
+
             string endStatus = "OK";
             if (running)   
             {
@@ -446,8 +479,10 @@ namespace KTL_Magnet2
                 _instance.InitExperiments();
                 if (bMode is BModeFromTo)
                     _instance.ExecuteExperiment(bMode as BModeFromTo, cts.Token);
-                else if (bMode is BModeList) { }
-                else if (bMode is BModeSteady) { }
+                else if (bMode is BModeSteady)
+                    _instance.ExecuteExperiment(bMode as BModeSteady, cts.Token);
+                else if (bMode is BModeList)
+                    _instance.ExecuteExperiment(bMode as BModeList, cts.Token);
                 _instance.FinalizeExperiments();
 
                 if (cts.IsCancellationRequested) endStatus = "Отмена";
@@ -551,14 +586,11 @@ namespace KTL_Magnet2
                 (v1, v2) = GetVoltage(B_target);
                 int b_delay = (int)Math.Round(((B_target - B_current) / b_slewrate) * 1000);
                 GoToV(v1, v2, b_delay);
-
-                dto.bSetpoint = B_current;
-                dto.v1 = v1;
-                dto.v2 = v2;
-
                 B_current = B_target;
+                dto.bSetpoint = B_current;
                 UpdateReadout(true);
             }
+
         }
 
         private void GoToV(double v1, double v2, int externalDelay = 0)
