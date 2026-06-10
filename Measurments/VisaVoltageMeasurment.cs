@@ -26,7 +26,16 @@ namespace KTL_Magnet2.Measurments
 
         IFormatProvider frmt = new NumberFormatInfo { NumberDecimalSeparator = "." };
         private string _deviceName;
-        public String DeviceName { get; set; }
+        public String DeviceName {
+            get
+            { return _deviceName ?? ""; }
+            set
+                
+            { 
+                if (String.IsNullOrEmpty(value))
+                _deviceName = value;
+            }
+        }
         public double PLC_time { get; set; } = -1;
         public double Limit { get; set; } = -1;
         public int Channel { get; set; } = -1;
@@ -76,18 +85,22 @@ namespace KTL_Magnet2.Measurments
             if (rm is null) throw new Exception("Не удалось загрузить менеджер устройств VISA");
             var resources = rm.FindResources("(USB)?*");
             if (!(resources?.Length > 0)) throw new Exception("Не найдено ни одного устройства USB");
-            if (!(_deviceName?.Length > 0))
+            if (!(DeviceName?.Length > 0))
             {
                 _deviceName = resources[0];
             }
             else
             {
-                if (!resources.Contains(DeviceName))
+                if (!resources.Contains(_deviceName))
                     throw new Exception("Указанное устройство недоступно");
-                _deviceName = DeviceName;
+            }
+            if (Limit == -1)
+            {
+                var us = new UsbSession(_deviceName);
+                us.Write("SENS:VOLT:DC:RANG:AUTO 1");
+                us.Dispose();
             }
 
-            
         }
 
         public override void Execute()

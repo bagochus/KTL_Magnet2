@@ -75,8 +75,7 @@ namespace KTL_Magnet2
 
         private async Task UpdateData()
         {
-            bindingTable = MagnetController.table;
-            if (bindingTable is null) return;
+
 
 
             if (!MagnetController.table.Columns.Contains(x_name) ||
@@ -106,6 +105,10 @@ namespace KTL_Magnet2
         {
             InitializeComponent();
             MagnetController.DataUpdated += this.ListUpdated;
+
+
+            bindingTable = MagnetController.table;
+            if (bindingTable is null) return;
 
             for (int i = 0; i < MagnetController.table.Columns.Count; i++)
             {

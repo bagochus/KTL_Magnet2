@@ -74,12 +74,22 @@ namespace KTL_Magnet2.DialogForms
             else comboBox_chanel.Text = Channel.ToString();
 
             comboBox_limit.Items.Add("Авто");
+            comboBox_limit.Items.Add("0.1");
+            comboBox_limit.Items.Add("1");
+            comboBox_limit.Items.Add("10");
+            comboBox_limit.Items.Add("100");
+            comboBox_limit.Items.Add("1000");
+
             if (Limit == -1)
                 comboBox_limit.SelectedIndex = 0;
             else 
                 comboBox_limit.Text = Limit.ToString(CultureInfo.InvariantCulture);
 
             comboBox_plc.Items.Add("Авто");
+            comboBox_plc.Items.Add("0.02");
+            comboBox_plc.Items.Add("0.1");
+            comboBox_plc.Items.Add("1");
+            comboBox_plc.Items.Add("10");
             if (PLC_time == -1)
             comboBox_plc.SelectedIndex = 0;
             else comboBox_plc.Text = PLC_time.ToString(CultureInfo.InvariantCulture);
