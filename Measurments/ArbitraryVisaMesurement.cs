@@ -93,7 +93,7 @@ namespace KTL_Magnet2.Measurments
         {
             var rm = ResourceManager.GetLocalManager();
             if (rm is null) throw new Exception("Не удалось загрузить менеджер устройств VISA");
-            var resources = rm.FindResources("USB:");
+            var resources = rm.FindResources("(USB)?*");
             if (!(resources?.Length > 0)) throw new Exception("Не найдено ни одного устройства USB");
             if (!(_deviceName?.Length > 0))
             {
