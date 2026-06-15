@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using KTL_Magnet2.Measurment;
+using KTL_Magnet2.Measurements;
 using System.IO;
 using System.Text.Json;
 using static System.Runtime.CompilerServices.Unsafe;
@@ -28,10 +28,12 @@ namespace KTL_Magnet2
         public AD_settings ads2;
         public AD_settings ads;
         public bool params_changed;
-        public VisaMeasurment[] visaMeasurments;
+        public VisaMeasurement[] visaMeasurements;
         private String[] devlist;
         private LoadSetupDelegate loadSetupDelegate;
         private NotifyParentFormDelegate notifyParentForm;
+        private bool previous_usect_state;
+        private bool input_list_empty;
 
 
         private ExpSetup localExpSetup = new ExpSetup();
@@ -45,6 +47,7 @@ namespace KTL_Magnet2
         {
             params_changed = false;
             InitializeComponent();
+            mc.ScanDevices();
             this.devlist = mc.VisaRes;
 
             if (devlist != null)
@@ -59,6 +62,8 @@ namespace KTL_Magnet2
             notifyParentForm = parent.SetupUpdated;
             InitialInterfaceSetup();
             ConstructFormFromSetup(mc.expSetup);
+            previous_usect_state = mc.expSetup.UseSetpointCalibrationTables;
+            input_list_empty = mc.inputLines.Count == 0;
         }
 
         private void InitialInterfaceSetup()
@@ -66,7 +71,7 @@ namespace KTL_Magnet2
             for (int i = 1; i <= 5 ; i++ )
             {
                 (this.Controls["measBox" + i.ToString()] as ComboBox).Items.Clear();
-                foreach (String s in Enum.GetNames(typeof(MeasurmentType)))
+                foreach (String s in Enum.GetNames(typeof(MeasurementType)))
                     (this.Controls["measBox" + i.ToString()] as ComboBox).Items.Add(s);
             }
             for (int i = 1; i <= 5; i++)
@@ -98,46 +103,47 @@ namespace KTL_Magnet2
         {
             if (setup == null) { return; }
             bool DevNameError = false;
-            for (int i = 0 ; i < setup.ad_Measurments.Count() ; i++)
+            for (int i = 0 ; i < setup.ad_Measurements.Count() ; i++)
             {
-                int ch_number = setup.ad_Measurments[i].ch_num;
+                int ch_number = setup.ad_Measurements[i].ch_num;
                 (this.Controls["onBox" + ch_number.ToString()] as CheckBox).Checked = true;
-                (this.Controls["GainBox" + ch_number.ToString()] as ComboBox).Text = setup.ad_Measurments[i].Gain.ToString();
-                (this.Controls["avgBox" + ch_number.ToString()] as TextBox).Text = setup.ad_Measurments[i].Avg.ToString();
-                (this.Controls["k_delayBox" + ch_number.ToString()] as TextBox).Text = setup.ad_Measurments[i].Delay.ToString();
+                (this.Controls["GainBox" + ch_number.ToString()] as ComboBox).Text = setup.ad_Measurements[i].Gain.ToString();
+                (this.Controls["avgBox" + ch_number.ToString()] as TextBox).Text = setup.ad_Measurements[i].Avg.ToString();
+                (this.Controls["k_delayBox" + ch_number.ToString()] as TextBox).Text = setup.ad_Measurements[i].Delay.ToString();
             }
 
-            for (int i = 1; i < setup.visa_Measurments.Count() + 1; i++)
+            for (int i = 1; i < setup.visa_Measurements.Count() + 1; i++)
             {
 
-                DevNameError = !devlist.Contains(setup.visa_Measurments[i - 1].DeviceName);
-                (this.Controls["deviceBox" + i.ToString()] as ComboBox).Text = setup.visa_Measurments[i - 1].DeviceName;
-                (this.Controls["measBox" + i.ToString()] as ComboBox).SelectedIndex = (int)setup.visa_Measurments[i - 1].Type;
-                if (setup.visa_Measurments[i - 1].Channel != -1)
+                DevNameError = !devlist.Contains(setup.visa_Measurements[i - 1].DeviceName);
+                (this.Controls["deviceBox" + i.ToString()] as ComboBox).Text = setup.visa_Measurements[i - 1].DeviceName;
+                (this.Controls["measBox" + i.ToString()] as ComboBox).SelectedIndex = (int)setup.visa_Measurements[i - 1].Type;
+                if (setup.visa_Measurements[i - 1].Channel != -1)
                 {
-                    (this.Controls["channelBox" + i.ToString()] as TextBox).Text = setup.visa_Measurments[i - 1].Channel.ToString();
+                    (this.Controls["channelBox" + i.ToString()] as TextBox).Text = setup.visa_Measurements[i - 1].Channel.ToString();
                 }
-                if (setup.visa_Measurments[i - 1].Limit != -1)
+                if (setup.visa_Measurements[i - 1].Limit != -1)
                 {
-                    (this.Controls["limitBox" + i.ToString()] as TextBox).Text = setup.visa_Measurments[i - 1].Limit.ToString();
+                    (this.Controls["limitBox" + i.ToString()] as TextBox).Text = setup.visa_Measurements[i - 1].Limit.ToString();
                 }
-                if (setup.visa_Measurments[i - 1].PLC_time != -1)
+                if (setup.visa_Measurements[i - 1].PLC_time != -1)
                 {
-                    (this.Controls["timeBox" + i.ToString()] as TextBox).Text = setup.visa_Measurments[i - 1].PLC_time.ToString();
+                    (this.Controls["timeBox" + i.ToString()] as TextBox).Text = setup.visa_Measurements[i - 1].PLC_time.ToString();
                 }
-                if (setup.visa_Measurments[i - 1].Delay != -1)
+                if (setup.visa_Measurements[i - 1].Delay != -1)
                 {
-                    (this.Controls["delayBox" + i.ToString()] as TextBox).Text = setup.visa_Measurments[i - 1].Delay.ToString();
+                    (this.Controls["delayBox" + i.ToString()] as TextBox).Text = setup.visa_Measurements[i - 1].Delay.ToString();
                 }
-                if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
+                //if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
             }
-            if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
+            //if (DevNameError) MessageBox.Show("Устройство VISA недоступно");
 
             checkBox_use_ct_readout.Checked = setup.UseReadoutCalibrationTables;
             checkBox_use_ct_setpoint.Checked = setup.UseSetpointCalibrationTables;
+            checkBox_show_v.Checked = setup.ShowConvertedV;
 
-            textBox_sp_plus_filename.Text = setup.SP_plus_filename;
-            textBox_sp_minus_filename.Text = setup.SP_minus_filename;
+            textBox_v1_filename.Text = setup.v1_filename;
+            textBox_v2_filename.Text = setup.v2_filename;
             textBox_readout_filename.Text = setup.Readout_filename; 
 
 
@@ -149,7 +155,12 @@ namespace KTL_Magnet2
             textBox_bsrmax.Text = setup.MaxBSlewrate.ToString();
             textBox_v1srmax.Text = setup.MaxV1SlewRate.ToString();
             textBox_v2srmax.Text = setup.MaxV2SlewRate.ToString();
-            textBox_zeroDelay.Text =setup.ZeroCrossingDelay.ToString();
+            textBox_zeroDelay.Text = setup.ZeroCrossingDelay.ToString();
+
+            checkBox_smooth.Checked = setup.UseSmoothZeroCrossing;
+            textBox_smoothdelay.Text = setup.SmoothDelay.ToString();
+            textBox_smoothstep.Text = setup.SmoothStep.ToString();
+
 
         }
 
@@ -158,14 +169,14 @@ namespace KTL_Magnet2
         {
             List<String> result = new List<String>();
 
-            for (int i = 0 ; i< expSetup.ad_Measurments.Count() ;i++ )
+            for (int i = 0 ; i< expSetup.ad_Measurements.Count() ;i++ )
             {
-                result.Add("AD_ch_" + expSetup.ad_Measurments[i].ch_num.ToString());
+                result.Add("AD_ch_" + expSetup.ad_Measurements[i].ch_num.ToString());
             }
 
-            for (int i = 0; i < expSetup.visa_Measurments.Count(); i++)
+            for (int i = 0; i < expSetup.visa_Measurements.Count(); i++)
             {
-                result.Add("VISA_" + expSetup.visa_Measurments[i].Type.ToString()
+                result.Add("VISA_" + expSetup.visa_Measurements[i].Type.ToString()
                     + "_" + (i+1).ToString());
             }
             return result;
@@ -173,7 +184,7 @@ namespace KTL_Magnet2
 
         private void SetReadoutSource (ExpSetup setup, int number)
         {
-            int ad_count = setup.ad_Measurments.Count();
+            int ad_count = setup.ad_Measurements.Count();
 
             if (number >= ad_count)
             {
@@ -190,7 +201,7 @@ namespace KTL_Magnet2
         private int GetReadoutId(ExpSetup setup)
         {
             if (setup.readoutSourceId == -1) return -1;
-            int ad_count = setup.ad_Measurments.Count();  
+            int ad_count = setup.ad_Measurements.Count();  
             if (!setup.UseReadoutCalibrationTables) return -1;
             if (setup.readoutSourceType == ReadoutSourceType.AD) return setup.readoutSourceId;
             if (setup.readoutSourceType == ReadoutSourceType.Visa) return setup.readoutSourceId + ad_count;
@@ -200,12 +211,12 @@ namespace KTL_Magnet2
 
         private void VisaChanged(object sender, EventArgs e)
         {
-            UpdateVisaMeasurments();
+            UpdateVisaMeasurements();
             UpdateReadoutSourceList(localExpSetup);
             SetReadoutSource(localExpSetup,comboBox_readout.SelectedIndex);
-            if (localExpSetup.readoutSourceType == ReadoutSourceType.Visa) comboBox_readout.SelectedIndex = 0;
             if (localExpSetup.readoutSourceType == ReadoutSourceType.Visa)
             {
+                comboBox_readout.SelectedIndex = -1;
                 localExpSetup.readoutSourceId = -1;
             }
             
@@ -216,9 +227,9 @@ namespace KTL_Magnet2
             UpdateADS();
             UpdateReadoutSourceList(localExpSetup);
             SetReadoutSource(localExpSetup, comboBox_readout.SelectedIndex);
-            if (localExpSetup.readoutSourceType == ReadoutSourceType.AD) comboBox_readout.SelectedIndex = 0;
             if (localExpSetup.readoutSourceType == ReadoutSourceType.AD)
             {
+                comboBox_readout.SelectedIndex = -1;
                 localExpSetup.readoutSourceId = -1;
             }
         }
@@ -234,7 +245,7 @@ namespace KTL_Magnet2
             try
             {
                 UpdateADS();
-                UpdateVisaMeasurments();
+                UpdateVisaMeasurements();
                 localExpSetup.MaxBStep = Double.Parse(textBox_dbmax.Text);
                 localExpSetup.MaxV1Step = Double.Parse(textBox_dv1max.Text);
                 localExpSetup.MaxV2Step = Double.Parse(textBox_dv2max.Text);
@@ -255,11 +266,12 @@ namespace KTL_Magnet2
                 }
 
                 localExpSetup.UseSetpointCalibrationTables = checkBox_use_ct_setpoint.Checked;
+                localExpSetup.ShowConvertedV = checkBox_show_v.Checked;
                 if (localExpSetup.UseSetpointCalibrationTables)
                 {
-                    localExpSetup.SP_minus_filename = textBox_sp_minus_filename.Text;
-                    localExpSetup.SP_plus_filename = textBox_sp_plus_filename.Text;
-                    if (localExpSetup.SP_minus_filename == "" | localExpSetup.SP_plus_filename == "")
+                    localExpSetup.v2_filename = textBox_v2_filename.Text;
+                    localExpSetup.v1_filename = textBox_v1_filename.Text;
+                    if (localExpSetup.v2_filename == "" | localExpSetup.v1_filename == "")
                         throw new Exception("Не указано имя файла с калибровочной таблицей");
                 }
 
@@ -269,46 +281,68 @@ namespace KTL_Magnet2
                 }
 
                 reading_ok = true;
+
+                if (!previous_usect_state &&
+                    localExpSetup.UseSetpointCalibrationTables &&
+                    !input_list_empty)
+                {
+                    DialogResult result = MessageBox.Show(
+                            "Включение режима калибровки очистит список экспериментов. \nПродолжить?",
+                            "Сообщение",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information,
+                            MessageBoxDefaultButton.Button1,
+                            MessageBoxOptions.DefaultDesktopOnly);
+
+                    reading_ok = (result == DialogResult.Yes);
+                }
+
+                localExpSetup.UseSmoothZeroCrossing = checkBox_smooth.Checked;
+                if (localExpSetup.UseSmoothZeroCrossing)
+                {
+                    localExpSetup.SmoothDelay = Int32.Parse (textBox_smoothdelay.Text);
+                    if (localExpSetup.SmoothDelay <= 0) throw new Exception("Задержка не может быть нулевой");
+                    localExpSetup.SmoothStep = double.Parse (textBox_smoothstep.Text);
+                    if (localExpSetup.SmoothStep <= 1e-8) throw new Exception("Шаг плавного изменения не может быть нулевым");
+                }
+
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); } 
             return reading_ok;
-
-            
-
 
         }
 
 
         private void UpdateADS()
         {
-            localExpSetup.ad_Measurments.Clear();
+            localExpSetup.ad_Measurements.Clear();
             for (int i = 0; i < 5; i++)
             {
                 if ((this.Controls["onBox" + i.ToString()] as CheckBox).Checked)
                 {
-                    AD_Measurment aD_Measurment = new AD_Measurment();
-                    aD_Measurment.ch_num = i;
+                    AD_Measurement aD_Measurement = new AD_Measurement();
+                    aD_Measurement.ch_num = i;
 
                     if ((this.Controls["GainBox" + i.ToString()] as ComboBox).Text == "")
                     {
-                        aD_Measurment.Gain = 1;
+                        aD_Measurement.Gain = 1;
                     }
                     else
                     {
-                        aD_Measurment.Gain = Int32.Parse((this.Controls["GainBox" + i.ToString()] as ComboBox).Text);
+                        aD_Measurement.Gain = Int32.Parse((this.Controls["GainBox" + i.ToString()] as ComboBox).Text);
                     }
-                    aD_Measurment.Avg = Int32.Parse((this.Controls["avgBox" + i.ToString()] as TextBox).Text);
-                    aD_Measurment.Delay = Int32.Parse((this.Controls["k_delayBox" + i.ToString()] as TextBox).Text);
-                    localExpSetup.ad_Measurments.Add(aD_Measurment);
+                    aD_Measurement.Avg = Int32.Parse((this.Controls["avgBox" + i.ToString()] as TextBox).Text);
+                    aD_Measurement.Delay = Int32.Parse((this.Controls["k_delayBox" + i.ToString()] as TextBox).Text);
+                    localExpSetup.ad_Measurements.Add(aD_Measurement);
                 }
             }
 
         }
 
 
-        private void UpdateVisaMeasurments()
+        private void UpdateVisaMeasurements()
         {
-            localExpSetup.visa_Measurments.Clear();
+            localExpSetup.visa_Measurements.Clear();
             for (int i = 1; i <=5; i++)
             {
 
@@ -319,13 +353,13 @@ namespace KTL_Magnet2
                 if (line_valid)
                 {
 
-                    VISA_Measurment vtemp = new VISA_Measurment();
+                    VISA_Measurement vtemp = new VISA_Measurement();
                     vtemp.DeviceName = (this.Controls["deviceBox" + i.ToString()] as ComboBox).Text;
 
                     String comboBox_text = (this.Controls["measBox" + i.ToString()] as ComboBox).Text;
-                    for (int j = 0; j < Enum.GetValues(typeof(MeasurmentType)).Length; j++)
+                    for (int j = 0; j < Enum.GetValues(typeof(MeasurementType)).Length; j++)
                     {
-                        if (comboBox_text == ((MeasurmentType)j).ToString()) vtemp.Type = (MeasurmentType)j;
+                        if (comboBox_text == ((MeasurementType)j).ToString()) vtemp.Type = (MeasurementType)j;
 
                     }
 
@@ -346,7 +380,7 @@ namespace KTL_Magnet2
                         vtemp.Delay = Int32.Parse((this.Controls["delayBox" + i.ToString()] as TextBox).Text);
                     }
 
-                    localExpSetup.visa_Measurments.Add(vtemp);
+                    localExpSetup.visa_Measurements.Add(vtemp);
 
                 }
 

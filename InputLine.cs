@@ -19,8 +19,8 @@ namespace KTL_Magnet2
         private int p_sign = 1;
         private void SetSign(int sign)
         {
-            if (sign < 0) sign = -1;
-            else sign = 1;
+            if (sign < 0) p_sign = -1;
+            else p_sign = 1;
         }
     }
 

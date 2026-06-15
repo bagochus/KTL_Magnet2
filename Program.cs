@@ -16,7 +16,14 @@ namespace KTL_Magnet2
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            //user code
+            string[] args = Environment.GetCommandLineArgs();
+            bool debugMode = args.Contains("-d");
+            MagnetController.Init(debugMode);
+            ExperimentsDB.InitializeDatabase();
+
+            //
+            Application.Run(new NewMainForm());
         }
     }
 }

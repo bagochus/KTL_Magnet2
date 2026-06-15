@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KTL_Magnet2.Measurment
+namespace KTL_Magnet2.Measurements
 {
-    public class VISA_Measurment
+    public class VISA_Measurement
     {
         public String DeviceName { get; set; }
-        public MeasurmentType Type { get; set; }
+        public MeasurementType Type { get; set; }
         public double PLC_time { get; set; }
         public double Limit { get; set; }
         public int Channel { get; set; }
         public int Delay { get; set; }
 
-        public VISA_Measurment()
+        public VISA_Measurement()
         {
             PLC_time = -1;
             Limit = -1;
